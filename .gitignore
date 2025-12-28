@@ -3,3 +3,4 @@
 .swiftpm
 compiled_raycast_swift
 node_modules
+.DS_Store
