@@ -1,4 +1,4 @@
 # Audio Priority Changelog
 
-## [Added] - 2025-12-28
+## [Added] - {PR_MERGE_DATE}
 - Audio priority initial version

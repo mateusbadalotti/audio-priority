@@ -41,7 +41,7 @@
     {
       "name": "systemOutput",
       "required": false,
-      "title": "Play sound effects through current output",
+      "title": "Play Sound Effects Through Current Output",
       "description": "Play system sounds through current output.",
       "label": "Update system sounds output",
       "type": "checkbox",

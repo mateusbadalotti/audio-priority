@@ -128,7 +128,6 @@ export default function Command() {
           <List.Item
             key={device.uid}
             title={device.name}
-            subtitle={device.isOutput ? "Output" : "Input"}
             accessories={[{ text: device.transportType }]}
             actions={
               <ActionPanel>

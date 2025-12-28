@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 type ExtensionPreferences = {
-  /** Play sound effects through current output - Play system sounds through current output. */
+  /** Play Sound Effects Through Current Output - Play system sounds through current output. */
   "systemOutput": boolean
 }
 
