@@ -64,10 +64,17 @@ function throwIfStderr({ stderr }: { stderr: string }) {
   }
 }
 
-function parseStdout({ stdout, stderr }: { stderr: string; stdout: string }) {
+function parseStdout<T extends AudioPriorityDevice | AudioPriorityDevice[]>({
+  stdout,
+  stderr,
+}: {
+  stderr: string;
+  stdout: string;
+}): T {
   throwIfStderr({ stderr });
   const parsed = JSON.parse(stdout) as AudioPriorityDevice | AudioPriorityDevice[];
-  return Array.isArray(parsed) ? parsed.map((device) => normalizeDevice(device)) : normalizeDevice(parsed);
+  const normalized = Array.isArray(parsed) ? parsed.map((device) => normalizeDevice(device)) : normalizeDevice(parsed);
+  return normalized as T;
 }
 
 function normalizeDevice(value: AudioPriorityDevice): AudioPriorityDevice {
@@ -82,37 +89,37 @@ function normalizeTransportType(value: unknown): TransportType {
 
 export async function getAllDevices(): Promise<AudioPriorityDevice[]> {
   await ensureBinary();
-  return parseStdout(await execa(binary, ["list", "--json"]));
+  return parseStdout<AudioPriorityDevice[]>(await execa(binary, ["list", "--json"]));
 }
 
 export async function getInputDevices(): Promise<AudioPriorityDevice[]> {
   await ensureBinary();
-  return parseStdout(await execa(binary, ["list", "--input", "--json"]));
+  return parseStdout<AudioPriorityDevice[]>(await execa(binary, ["list", "--input", "--json"]));
 }
 
 export async function getOutputDevices(): Promise<AudioPriorityDevice[]> {
   await ensureBinary();
-  return parseStdout(await execa(binary, ["list", "--output", "--json"]));
+  return parseStdout<AudioPriorityDevice[]>(await execa(binary, ["list", "--output", "--json"]));
 }
 
 export async function getDevice(deviceId: string): Promise<AudioPriorityDevice> {
   await ensureBinary();
-  return parseStdout(await execa(binary, ["get", "--json", deviceId]));
+  return parseStdout<AudioPriorityDevice>(await execa(binary, ["get", "--json", deviceId]));
 }
 
 export async function getDefaultOutputDevice(): Promise<AudioPriorityDevice> {
   await ensureBinary();
-  return parseStdout(await execa(binary, ["output", "get", "--json"]));
+  return parseStdout<AudioPriorityDevice>(await execa(binary, ["output", "get", "--json"]));
 }
 
 export async function getDefaultInputDevice(): Promise<AudioPriorityDevice> {
   await ensureBinary();
-  return parseStdout(await execa(binary, ["input", "get", "--json"]));
+  return parseStdout<AudioPriorityDevice>(await execa(binary, ["input", "get", "--json"]));
 }
 
 export async function getDefaultSystemDevice(): Promise<AudioPriorityDevice> {
   await ensureBinary();
-  return parseStdout(await execa(binary, ["system", "get", "--json"]));
+  return parseStdout<AudioPriorityDevice>(await execa(binary, ["system", "get", "--json"]));
 }
 
 export async function setDefaultOutputDevice(deviceId: string) {
@@ -148,7 +155,7 @@ export async function createAggregateDevice(
   options?: { multiOutput?: boolean },
 ): Promise<AudioPriorityDevice> {
   await ensureBinary();
-  return parseStdout(
+  return parseStdout<AudioPriorityDevice>(
     await execa(
       binary,
       [
