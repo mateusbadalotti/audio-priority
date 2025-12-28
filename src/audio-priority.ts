@@ -66,22 +66,18 @@ function throwIfStderr({ stderr }: { stderr: string }) {
 
 function parseStdout({ stdout, stderr }: { stderr: string; stdout: string }) {
   throwIfStderr({ stderr });
-  const parsed = JSON.parse(stdout);
-  if (Array.isArray(parsed)) {
-    return parsed.map((device) => normalizeDevice(device));
-  }
-  return normalizeDevice(parsed);
+  const parsed = JSON.parse(stdout) as AudioPriorityDevice | AudioPriorityDevice[];
+  return Array.isArray(parsed) ? parsed.map((device) => normalizeDevice(device)) : normalizeDevice(parsed);
 }
 
-function normalizeDevice(value: AudioPriorityDevice) {
-  if (!value) return value;
+function normalizeDevice(value: AudioPriorityDevice): AudioPriorityDevice {
   const transportType = normalizeTransportType(value.transportType);
   return transportType === value.transportType ? value : { ...value, transportType };
 }
 
-function normalizeTransportType(value: unknown): TransportType | unknown {
-  if (typeof value !== "string") return value;
-  return TRANSPORT_TYPE_MAP[value.toLowerCase()] ?? value;
+function normalizeTransportType(value: unknown): TransportType {
+  if (typeof value !== "string") return TransportType.Unknown;
+  return TRANSPORT_TYPE_MAP[value.toLowerCase()] ?? TransportType.Unknown;
 }
 
 export async function getAllDevices(): Promise<AudioPriorityDevice[]> {

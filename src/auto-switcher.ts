@@ -66,7 +66,7 @@ async function maybeSwitchOutput(disabledDevices: string[]) {
   return true;
 }
 
-async function runSwitch(type: IOType, notify: boolean) {
+async function runSwitch(type: IOType) {
   const disabledDevices = await getDisabledDevices();
   const changed = type === "input" ? await maybeSwitchInput(disabledDevices) : await maybeSwitchOutput(disabledDevices);
 
@@ -78,7 +78,7 @@ export async function applyAutoSwitchIfEnabled(type: IOType) {
   if (!enabled) return false;
 
   try {
-    return await runSwitch(type, false);
+    return await runSwitch(type);
   } catch {
     return false;
   }
@@ -102,7 +102,7 @@ export async function runAutoSwitch(type: IOType) {
   }
 
   try {
-    await runSwitch(type, !isBackground);
+    await runSwitch(type);
   } catch (error) {
     if (!isBackground) {
       await showToast(
