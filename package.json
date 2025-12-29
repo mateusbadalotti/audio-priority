@@ -50,8 +50,7 @@
     "@raycast/api": "^1.66.0",
     "@raycast/utils": "^1.12.0",
     "@spotxyz/macos-audio-devices": "1.5.0",
-    "execa": "^6.0.0",
-    "prettier": "^3.2.5"
+    "execa": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.8.10",
@@ -60,6 +59,7 @@
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
+    "prettier": "^3.2.5",
     "react": "^18.2.0",
     "typescript": "^4.4.3"
   },
