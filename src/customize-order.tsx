@@ -51,8 +51,9 @@ export default function Command() {
 
   const devices = data?.devices ?? [];
   const orderedDevices = applyDeviceOrder(order, devices);
-  const enabledDevices = orderedDevices.filter((device) => !disabled.includes(device.uid));
-  const disabledDevices = orderedDevices.filter((device) => disabled.includes(device.uid));
+  const disabledSet = new Set(disabled);
+  const enabledDevices = orderedDevices.filter((device) => !disabledSet.has(device.uid));
+  const disabledDevices = orderedDevices.filter((device) => disabledSet.has(device.uid));
 
   async function persistOrder(nextOrder: string[]) {
     setOrder(nextOrder);

@@ -41,7 +41,8 @@ async function setOutputAndSystemDevice(deviceId: string) {
 async function maybeSwitchInput(disabledDevices: string[]) {
   const devices = await getInputDevices();
   const order = await getDeviceOrder("input");
-  const ordered = applyDeviceOrder(order, devices).filter((device) => !disabledDevices.includes(device.uid));
+  const disabledSet = new Set(disabledDevices);
+  const ordered = applyDeviceOrder(order, devices).filter((device) => !disabledSet.has(device.uid));
   const target = ordered[0];
   if (!target) return false;
 
@@ -55,7 +56,8 @@ async function maybeSwitchInput(disabledDevices: string[]) {
 async function maybeSwitchOutput(disabledDevices: string[]) {
   const devices = await getOutputDevices();
   const order = await getDeviceOrder("output");
-  const ordered = applyDeviceOrder(order, devices).filter((device) => !disabledDevices.includes(device.uid));
+  const disabledSet = new Set(disabledDevices);
+  const ordered = applyDeviceOrder(order, devices).filter((device) => !disabledSet.has(device.uid));
   const target = ordered[0];
   if (!target) return false;
 
