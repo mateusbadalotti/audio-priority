@@ -17,8 +17,7 @@
       "subtitle": "Disabled",
       "description": "Enable or disable automatic switching for input devices.",
       "mode": "no-view",
-      "interval": "20s",
-      "disabledByDefault": true
+      "interval": "20s"
     },
     {
       "name": "auto-switch-output",
@@ -26,8 +25,7 @@
       "subtitle": "Disabled",
       "description": "Enable or disable automatic switching for output devices.",
       "mode": "no-view",
-      "interval": "20s",
-      "disabledByDefault": true
+      "interval": "20s"
     },
     {
       "name": "customize-order",
