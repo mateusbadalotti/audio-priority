@@ -8,12 +8,10 @@ final class PriorityManager {
     private let hiddenInputsKey = "hiddenMics"
     private let hiddenOutputsKey = "hiddenSpeakers"
 
-    func isHidden(_ device: AudioDevice) -> Bool {
-        if device.type == .input {
-            let hidden = defaults.array(forKey: hiddenInputsKey) as? [String] ?? []
-            return hidden.contains(device.uid)
-        }
-        return hiddenOutputs().contains(device.uid)
+    func hiddenUIDs(for type: AudioDeviceType) -> Set<String> {
+        let key = type == .input ? hiddenInputsKey : hiddenOutputsKey
+        let hidden = defaults.array(forKey: key) as? [String] ?? []
+        return Set(hidden)
     }
 
     func hideDevice(_ device: AudioDevice) {
@@ -48,10 +46,11 @@ final class PriorityManager {
 
     func sortByPriority(_ devices: [AudioDevice], type: AudioDeviceType) -> [AudioDevice] {
         let priorities = priorityList(for: type)
+        let indexByUid = Dictionary(uniqueKeysWithValues: priorities.enumerated().map { ($0.element, $0.offset) })
 
         return devices.sorted { a, b in
-            let indexA = priorities.firstIndex(of: a.uid) ?? Int.max
-            let indexB = priorities.firstIndex(of: b.uid) ?? Int.max
+            let indexA = indexByUid[a.uid] ?? Int.max
+            let indexB = indexByUid[b.uid] ?? Int.max
             return indexA < indexB
         }
     }
@@ -60,11 +59,6 @@ final class PriorityManager {
         let key = type == .input ? inputPrioritiesKey : outputPrioritiesKey
         let uids = devices.map { $0.uid }
         defaults.set(uids, forKey: key)
-    }
-
-    private func hiddenOutputs() -> Set<String> {
-        let hiddenSpeakers = defaults.array(forKey: hiddenOutputsKey) as? [String] ?? []
-        return Set(hiddenSpeakers)
     }
 
     private func priorityList(for type: AudioDeviceType) -> [String] {

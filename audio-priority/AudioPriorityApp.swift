@@ -89,9 +89,7 @@ class AudioManager: ObservableObject {
 
     private func setupVolumeListener() {
         deviceService.onVolumeChanged = { [weak self] in
-            Task { @MainActor in
-                self?.scheduleVolumeRefresh()
-            }
+            self?.scheduleVolumeRefresh()
         }
     }
 
@@ -113,13 +111,29 @@ class AudioManager: ObservableObject {
         let connectedInputs = allConnectedDevices.filter { $0.type == .input }
         let connectedOutputs = allConnectedDevices.filter { $0.type == .output }
 
-        let visibleInputs = connectedInputs.filter { !priorityManager.isHidden($0) }
-        let regularHiddenInputs = connectedInputs.filter { priorityManager.isHidden($0) }
+        let hiddenInputUIDs = priorityManager.hiddenUIDs(for: .input)
+        var visibleInputs: [AudioDevice] = []
+        var regularHiddenInputs: [AudioDevice] = []
+        for device in connectedInputs {
+            if hiddenInputUIDs.contains(device.uid) {
+                regularHiddenInputs.append(device)
+            } else {
+                visibleInputs.append(device)
+            }
+        }
         inputDevices = priorityManager.sortByPriority(visibleInputs, type: .input)
         hiddenInputDevices = regularHiddenInputs
 
-        let visibleOutputs = connectedOutputs.filter { !priorityManager.isHidden($0) }
-        let regularHiddenOutputs = connectedOutputs.filter { priorityManager.isHidden($0) }
+        let hiddenOutputUIDs = priorityManager.hiddenUIDs(for: .output)
+        var visibleOutputs: [AudioDevice] = []
+        var regularHiddenOutputs: [AudioDevice] = []
+        for device in connectedOutputs {
+            if hiddenOutputUIDs.contains(device.uid) {
+                regularHiddenOutputs.append(device)
+            } else {
+                visibleOutputs.append(device)
+            }
+        }
         speakerDevices = priorityManager.sortByPriority(visibleOutputs, type: .output)
         hiddenSpeakerDevices = regularHiddenOutputs
         currentInputId = deviceService.getCurrentDefaultDevice(type: .input)
@@ -219,12 +233,18 @@ class AudioManager: ObservableObject {
     }
 
     private func applyInputDevice(_ device: AudioDevice) {
+        if currentInputId == device.id {
+            return
+        }
         deviceService.setDefaultDevice(device.id, type: .input)
         currentInputId = device.id
         refreshMicVolume()
     }
 
     private func applyOutputDevice(_ device: AudioDevice) {
+        if currentOutputId == device.id {
+            return
+        }
         deviceService.setDefaultDevice(device.id, type: .output)
         currentOutputId = device.id
     }
@@ -253,9 +273,7 @@ class AudioManager: ObservableObject {
 
     private func setupDeviceChangeListener() {
         deviceService.onDevicesChanged = { [weak self] in
-            Task { @MainActor in
-                self?.handleDeviceChange()
-            }
+            self?.handleDeviceChange()
         }
         deviceService.startListening()
     }

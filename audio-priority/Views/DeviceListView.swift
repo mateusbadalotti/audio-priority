@@ -17,6 +17,9 @@ struct DeviceListView: View {
     private let rowSpacing: CGFloat = 4
 
     private var rowStride: CGFloat { rowHeight + rowSpacing }
+    private var indexByDeviceId: [AudioObjectID: Int] {
+        Dictionary(uniqueKeysWithValues: devices.enumerated().map { ($0.element.id, $0.offset) })
+    }
 
     init(
         devices: [AudioDevice],
@@ -34,8 +37,10 @@ struct DeviceListView: View {
     }
 
     var body: some View {
+        let indexByDeviceId = indexByDeviceId
         VStack(spacing: rowSpacing) {
-            ForEach(Array(devices.enumerated()), id: \.element.id) { index, device in
+            ForEach(devices, id: \.id) { device in
+                let index = indexByDeviceId[device.id] ?? 0
                 DraggableDeviceRow(
                     device: device,
                     index: index,
@@ -153,7 +158,6 @@ struct DraggableDeviceRow: View {
                 .scaleEffect(isHovering || isDragging ? 0.8 : 1)
             }
             .frame(width: 36)
-            .animation(.easeInOut(duration: 0.12), value: isHovering)
             .animation(.easeInOut(duration: 0.12), value: isDragging)
 
             HStack(spacing: 8) {
@@ -211,11 +215,7 @@ struct DraggableDeviceRow: View {
                 .stroke(isDragging ? Color.accentColor : Color.clear, lineWidth: 2)
         )
         .scaleEffect(isDragging ? 1.02 : 1.0)
-        .animation(.easeInOut(duration: 0.15), value: isHovering)
-        .animation(.easeInOut(duration: 0.15), value: isSelected)
         .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isDragging)
-        .animation(.easeInOut(duration: 0.1), value: isDropTarget)
-        .animation(.easeInOut(duration: 0.1), value: isDropTargetBelow)
         .contentShape(Rectangle())
         .onTapGesture {
             onSelect()

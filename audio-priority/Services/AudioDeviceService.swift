@@ -45,11 +45,20 @@ class AudioDeviceService {
         var devices: [AudioDevice] = []
 
         for deviceId in deviceIds {
-            if let inputDevice = createDevice(id: deviceId, type: .input) {
-                devices.append(inputDevice)
+            let hasInput = hasStreams(deviceId: deviceId, scope: kAudioDevicePropertyScopeInput)
+            let hasOutput = hasStreams(deviceId: deviceId, scope: kAudioDevicePropertyScopeOutput)
+            if !hasInput && !hasOutput {
+                continue
             }
-            if let outputDevice = createDevice(id: deviceId, type: .output) {
-                devices.append(outputDevice)
+
+            guard let name = getDeviceName(id: deviceId) else { continue }
+            guard let uid = getDeviceUID(id: deviceId) else { continue }
+
+            if hasInput {
+                devices.append(AudioDevice(id: deviceId, uid: uid, name: name, type: .input))
+            }
+            if hasOutput {
+                devices.append(AudioDevice(id: deviceId, uid: uid, name: name, type: .output))
             }
         }
 
@@ -232,38 +241,52 @@ class AudioDeviceService {
     func updateVolumeListeners() {
         removeVolumeListeners()
 
-        volumeListenerBlock = { [weak self] _, _ in
-            self?.onVolumeChanged?()
-        }
-
         let inputId = getCurrentDefaultDevice(type: .input)
         let outputId = getCurrentDefaultDevice(type: .output)
         let deviceIds = Set([inputId, outputId].compactMap { $0 })
 
         guard !deviceIds.isEmpty else { return }
 
+        volumeListenerBlock = { [weak self] _, _ in
+            self?.onVolumeChanged?()
+        }
+
         for deviceId in deviceIds {
-            var volumeAddress = AudioObjectPropertyAddress(
-                mSelector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
-                mScope: kAudioDevicePropertyScopeOutput,
-                mElement: kAudioObjectPropertyElementMain
-            )
-            AudioObjectAddPropertyListenerBlock(
-                deviceId,
-                &volumeAddress,
-                DispatchQueue.main,
-                volumeListenerBlock!
-            )
+            var didAddListener = false
 
-            volumeAddress.mScope = kAudioDevicePropertyScopeInput
-            AudioObjectAddPropertyListenerBlock(
-                deviceId,
-                &volumeAddress,
-                DispatchQueue.main,
-                volumeListenerBlock!
-            )
+            if hasStreams(deviceId: deviceId, scope: kAudioDevicePropertyScopeOutput) {
+                var volumeAddress = AudioObjectPropertyAddress(
+                    mSelector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
+                    mScope: kAudioDevicePropertyScopeOutput,
+                    mElement: kAudioObjectPropertyElementMain
+                )
+                AudioObjectAddPropertyListenerBlock(
+                    deviceId,
+                    &volumeAddress,
+                    DispatchQueue.main,
+                    volumeListenerBlock!
+                )
+                didAddListener = true
+            }
 
-            monitoredDeviceIds.insert(deviceId)
+            if hasStreams(deviceId: deviceId, scope: kAudioDevicePropertyScopeInput) {
+                var volumeAddress = AudioObjectPropertyAddress(
+                    mSelector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
+                    mScope: kAudioDevicePropertyScopeInput,
+                    mElement: kAudioObjectPropertyElementMain
+                )
+                AudioObjectAddPropertyListenerBlock(
+                    deviceId,
+                    &volumeAddress,
+                    DispatchQueue.main,
+                    volumeListenerBlock!
+                )
+                didAddListener = true
+            }
+
+            if didAddListener {
+                monitoredDeviceIds.insert(deviceId)
+            }
         }
     }
 
@@ -330,19 +353,6 @@ class AudioDeviceService {
         )
 
         listenerBlock = nil
-    }
-
-    private func createDevice(id: AudioObjectID, type: AudioDeviceType) -> AudioDevice? {
-        let scope: AudioObjectPropertyScope = type == .input
-            ? kAudioDevicePropertyScopeInput
-            : kAudioDevicePropertyScopeOutput
-
-        guard hasStreams(deviceId: id, scope: scope) else { return nil }
-
-        guard let name = getDeviceName(id: id) else { return nil }
-        guard let uid = getDeviceUID(id: id) else { return nil }
-
-        return AudioDevice(id: id, uid: uid, name: name, type: type)
     }
 
     private func hasStreams(deviceId: AudioObjectID, scope: AudioObjectPropertyScope) -> Bool {
