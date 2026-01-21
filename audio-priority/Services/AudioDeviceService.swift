@@ -2,7 +2,7 @@ import Foundation
 import CoreAudio
 import AudioToolbox
 
-class AudioDeviceService {
+final class AudioDeviceService: @unchecked Sendable {
     var onDevicesChanged: (() -> Void)?
     var onVolumeChanged: (() -> Void)?
 
@@ -381,8 +381,8 @@ class AudioDeviceService {
             mElement: kAudioObjectPropertyElementMain
         )
 
-        var name: CFString?
-        var dataSize = UInt32(MemoryLayout<CFString?>.size)
+        var name: CFString = "" as CFString
+        var dataSize = UInt32(MemoryLayout<CFString>.size)
 
         let status = AudioObjectGetPropertyData(
             id,
@@ -393,7 +393,7 @@ class AudioDeviceService {
             &name
         )
 
-        return status == noErr ? name as String? : nil
+        return status == noErr ? name as String : nil
     }
 
     private func getDeviceUID(id: AudioObjectID) -> String? {
@@ -403,8 +403,8 @@ class AudioDeviceService {
             mElement: kAudioObjectPropertyElementMain
         )
 
-        var uid: CFString?
-        var dataSize = UInt32(MemoryLayout<CFString?>.size)
+        var uid: CFString = "" as CFString
+        var dataSize = UInt32(MemoryLayout<CFString>.size)
 
         let status = AudioObjectGetPropertyData(
             id,
@@ -415,7 +415,7 @@ class AudioDeviceService {
             &uid
         )
 
-        return status == noErr ? uid as String? : nil
+        return status == noErr ? uid as String : nil
     }
 
     deinit {

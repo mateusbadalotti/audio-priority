@@ -261,11 +261,11 @@ class AudioManager: ObservableObject {
         }
     }
 
-    private func fetchDevices(_ completion: @escaping ([AudioDevice]) -> Void) {
+    private func fetchDevices(_ completion: @escaping @MainActor @Sendable ([AudioDevice]) -> Void) {
         let service = deviceService
         DispatchQueue.global(qos: .userInitiated).async {
             let devices = service.getDevices()
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 completion(devices)
             }
         }

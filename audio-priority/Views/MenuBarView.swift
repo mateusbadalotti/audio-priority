@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreAudio
 import AppKit
 
 private enum VolumeConstants {
