@@ -2,7 +2,7 @@ name: Build and Release
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     tags:
       - 'v*'
   workflow_dispatch:
@@ -49,13 +49,13 @@ jobs:
           path: release/AudioPriorityBar.zip
 
       - name: Create Nightly Release
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: nightly
           name: Nightly Build
           body: |
-            Automated nightly build from the latest commit on main.
+            Automated nightly build from the latest commit on master.
 
             **Commit:** ${{ github.sha }}
             **Date:** ${{ github.event.head_commit.timestamp }}
