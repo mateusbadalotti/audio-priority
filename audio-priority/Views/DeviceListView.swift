@@ -8,7 +8,6 @@ struct DeviceListView: View {
     let onSelect: (AudioDevice) -> Void
     var onHide: ((AudioDevice) -> Void)?
 
-    // Only track which item is being dragged and the target - not the offset
     @State private var draggingIndex: Int? = nil
     @State private var targetIndex: Int? = nil
     
@@ -96,7 +95,6 @@ struct DeviceListView: View {
     }
 }
 
-// Row wrapper that handles the drag gesture
 struct DraggableDeviceRow: View {
     let device: AudioDevice
     let index: Int
@@ -127,10 +125,6 @@ struct DraggableDeviceRow: View {
         )
     }
 
-    var statusIcon: String? {
-        return nil
-    }
-
     private func calculateTarget(offset: CGFloat) -> Int? {
         let rowsOffset = Int(round(offset / rowStride))
         var newTarget = index + rowsOffset
@@ -144,9 +138,7 @@ struct DraggableDeviceRow: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            // Drag handle + priority label area
             ZStack {
-                // Drag handle icon
                 Image(systemName: "line.3.horizontal")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.secondary)
@@ -164,19 +156,12 @@ struct DraggableDeviceRow: View {
             .animation(.easeInOut(duration: 0.12), value: isHovering)
             .animation(.easeInOut(duration: 0.12), value: isDragging)
 
-            // Device name - use HStack with tap gesture instead of Button to not interfere with drag
             HStack(spacing: 8) {
                 Text(device.name)
                     .font(.system(size: 13, weight: .regular))
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .foregroundColor(.primary)
-
-                if let icon = statusIcon {
-                    Image(systemName: icon)
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary.opacity(0.7))
-                }
 
                 Spacer(minLength: 12)
 
@@ -202,7 +187,6 @@ struct DraggableDeviceRow: View {
             RoundedRectangle(cornerRadius: 10)
                 .stroke(isSelected ? Color.accentColor.opacity(0.8) : Color.clear, lineWidth: 1.5)
         )
-        // Drop indicator above this row
         .overlay(alignment: .top) {
             if isDropTarget {
                 DropIndicatorLine()
@@ -210,7 +194,6 @@ struct DraggableDeviceRow: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.8)))
             }
         }
-        // Drop indicator below this row (for last position)
         .overlay(alignment: .bottom) {
             if isDropTargetBelow {
                 DropIndicatorLine()
@@ -223,7 +206,6 @@ struct DraggableDeviceRow: View {
                 isHovering = hovering
             }
         }
-        // Highlight the dragged row with a border instead of moving it
         .overlay(
             RoundedRectangle(cornerRadius: 10)
                 .stroke(isDragging ? Color.accentColor : Color.clear, lineWidth: 2)
@@ -269,7 +251,6 @@ struct DraggableDeviceRow: View {
     }
 }
 
-// Drop indicator line
 struct DropIndicatorLine: View {
     var body: some View {
         HStack(spacing: 0) {

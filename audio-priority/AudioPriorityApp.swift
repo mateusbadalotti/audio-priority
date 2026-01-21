@@ -36,7 +36,7 @@ class AudioManager: ObservableObject {
     private let defaults = UserDefaults.standard
     private let autoSwitchDefaultsKey = "autoSwitchEnabled"
     private let deviceService = AudioDeviceService()
-    let priorityManager = PriorityManager()
+    private let priorityManager = PriorityManager()
     private var cachedDevices: [AudioDevice] = []
     private var pendingDeviceRefresh: DispatchWorkItem?
     private var pendingVolumeRefresh: DispatchWorkItem?
@@ -127,16 +127,8 @@ class AudioManager: ObservableObject {
     }
 
     private func performDeviceRefresh() {
-        let service = deviceService
-        Task { [weak self] in
-            let devices = await withCheckedContinuation { continuation in
-                DispatchQueue.global(qos: .userInitiated).async {
-                    continuation.resume(returning: service.getDevices())
-                }
-            }
-            await MainActor.run {
-                self?.applyDeviceSnapshot(devices)
-            }
+        fetchDevices { [weak self] devices in
+            self?.applyDeviceSnapshot(devices)
         }
     }
 
@@ -153,21 +145,13 @@ class AudioManager: ObservableObject {
     }
 
     private func performDeviceRefreshAndApply() {
-        let service = deviceService
-        Task { [weak self] in
-            let devices = await withCheckedContinuation { continuation in
-                DispatchQueue.global(qos: .userInitiated).async {
-                    continuation.resume(returning: service.getDevices())
-                }
-            }
-            await MainActor.run {
-                guard let self else { return }
-                self.applyDeviceSnapshot(devices)
-                self.handleVolumeChange()
-                if self.isAutoSwitchEnabled {
-                    self.applyHighestPriorityInput()
-                    self.applyHighestPriorityOutput()
-                }
+        fetchDevices { [weak self] devices in
+            guard let self else { return }
+            self.applyDeviceSnapshot(devices)
+            self.handleVolumeChange()
+            if self.isAutoSwitchEnabled {
+                self.applyHighestPriorityInput()
+                self.applyHighestPriorityOutput()
             }
         }
     }
@@ -213,7 +197,7 @@ class AudioManager: ObservableObject {
     func moveInputDevice(from source: IndexSet, to destination: Int) {
         inputDevices.move(fromOffsets: source, toOffset: destination)
         priorityManager.savePriorities(inputDevices, type: .input)
-        if let topInput = inputDevices.first, topInput.isConnected {
+        if let topInput = inputDevices.first {
             applyInputDevice(topInput)
         }
     }
@@ -221,7 +205,7 @@ class AudioManager: ObservableObject {
     func moveSpeakerDevice(from source: IndexSet, to destination: Int) {
         speakerDevices.move(fromOffsets: source, toOffset: destination)
         priorityManager.savePriorities(speakerDevices, type: .output)
-        if let topSpeaker = speakerDevices.first, topSpeaker.isConnected {
+        if let topSpeaker = speakerDevices.first {
             applyOutputDevice(topSpeaker)
         }
     }
@@ -246,14 +230,24 @@ class AudioManager: ObservableObject {
     }
 
     private func applyHighestPriorityInput() {
-        if let first = inputDevices.first(where: { $0.isConnected }) {
+        if let first = inputDevices.first {
             applyInputDevice(first)
         }
     }
 
     private func applyHighestPriorityOutput() {
-        if let first = speakerDevices.first(where: { $0.isConnected }) {
+        if let first = speakerDevices.first {
             applyOutputDevice(first)
+        }
+    }
+
+    private func fetchDevices(_ completion: @escaping ([AudioDevice]) -> Void) {
+        let service = deviceService
+        DispatchQueue.global(qos: .userInitiated).async {
+            let devices = service.getDevices()
+            DispatchQueue.main.async {
+                completion(devices)
+            }
         }
     }
 

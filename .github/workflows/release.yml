@@ -25,7 +25,7 @@ jobs:
 
       - name: Build
         run: |
-          xcodebuild -scheme AudioPriority \
+          xcodebuild -scheme audio-priority \
             -configuration Release \
             -derivedDataPath build \
             -arch arm64 -arch x86_64 \

@@ -237,7 +237,7 @@ struct ScrollWheelReceiver: NSViewRepresentable {
     }
 }
 
-class ScrollWheelNSView: NSView {
+final class ScrollWheelNSView: NSView {
     var onScroll: ((CGFloat) -> Void)?
 
     override func scrollWheel(with event: NSEvent) {

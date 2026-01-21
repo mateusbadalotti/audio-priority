@@ -160,7 +160,7 @@ class AudioDeviceService {
         )
     }
 
-    func getDeviceVolume(_ deviceId: AudioObjectID, scope: AudioObjectPropertyScope) -> Float? {
+    private func getDeviceVolume(_ deviceId: AudioObjectID, scope: AudioObjectPropertyScope) -> Float? {
         var propertyAddress = AudioObjectPropertyAddress(
             mSelector: kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
             mScope: scope,

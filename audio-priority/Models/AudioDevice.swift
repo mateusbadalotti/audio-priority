@@ -11,9 +11,4 @@ struct AudioDevice: Identifiable, Equatable, Hashable {
     let uid: String
     let name: String
     let type: AudioDeviceType
-    var isConnected: Bool = true
-
-    var isValid: Bool {
-        id != kAudioObjectUnknown
-    }
 }
