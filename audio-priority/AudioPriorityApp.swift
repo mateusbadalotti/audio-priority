@@ -1,6 +1,13 @@
 import SwiftUI
 import CoreAudio
 
+enum AppColors {
+    static let graphiteRed: Double = 105.0 / 255.0
+    static let graphiteGreen: Double = 104.0 / 255.0
+    static let graphiteBlue: Double = 105.0 / 255.0
+    static let graphite = Color(red: graphiteRed, green: graphiteGreen, blue: graphiteBlue)
+}
+
 @main
 struct AudioPriorityApp: App {
     @StateObject private var audioManager = AudioManager()

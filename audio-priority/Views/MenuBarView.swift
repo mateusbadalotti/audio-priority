@@ -159,7 +159,7 @@ struct SmoothVolumeSlider: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 13))
-                .foregroundColor(.accentColor)
+                .foregroundColor(AppColors.graphite)
                 .frame(width: 20)
                 .animation(.easeInOut(duration: 0.15), value: icon)
 
@@ -175,6 +175,7 @@ struct SmoothVolumeSlider: View {
                 }
             )
             .controlSize(.small)
+            .tint(AppColors.graphite)
 
             Text(percentText)
                 .font(.system(size: 11, weight: .medium))
@@ -265,7 +266,7 @@ struct DeviceSectionView: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 11))
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(AppColors.graphite)
                 Text(title)
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.secondary)
@@ -396,7 +397,7 @@ struct AutoSwitchToggle: View {
                 Text("Auto")
                     .font(.system(size: 11, weight: .medium))
             }
-            .foregroundColor(audioManager.isAutoSwitchEnabled ? .accentColor : .secondary)
+            .foregroundColor(audioManager.isAutoSwitchEnabled ? AppColors.graphite : .secondary)
         }
         .buttonStyle(.plain)
         .help(audioManager.isAutoSwitchEnabled ? "Disable auto-switching" : "Enable auto-switching")

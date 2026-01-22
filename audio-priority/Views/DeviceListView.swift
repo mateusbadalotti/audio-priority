@@ -185,11 +185,11 @@ struct DraggableDeviceRow: View {
         .opacity(isDragging ? 0.5 : 1.0)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(isSelected ? Color.accentColor.opacity(0.12) : (isHovering ? Color.primary.opacity(0.06) : Color.clear))
+                .fill(isSelected ? AppColors.graphite.opacity(0.12) : (isHovering ? Color.primary.opacity(0.06) : Color.clear))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(isSelected ? Color.accentColor.opacity(0.8) : Color.clear, lineWidth: 1.5)
+                .stroke(isSelected ? AppColors.graphite.opacity(0.8) : Color.clear, lineWidth: 1.5)
         )
         .overlay(alignment: .top) {
             if isDropTarget {
@@ -212,7 +212,7 @@ struct DraggableDeviceRow: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(isDragging ? Color.accentColor : Color.clear, lineWidth: 2)
+                .stroke(isDragging ? AppColors.graphite : Color.clear, lineWidth: 2)
         )
         .scaleEffect(isDragging ? 1.02 : 1.0)
         .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isDragging)
@@ -255,10 +255,10 @@ struct DropIndicatorLine: View {
     var body: some View {
         HStack(spacing: 0) {
             Circle()
-                .fill(Color.accentColor)
+                .fill(AppColors.graphite)
                 .frame(width: 6, height: 6)
             Rectangle()
-                .fill(Color.accentColor)
+                .fill(AppColors.graphite)
                 .frame(height: 2)
         }
         .padding(.horizontal, 2)
