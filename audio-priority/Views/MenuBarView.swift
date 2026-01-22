@@ -394,10 +394,10 @@ struct AutoSwitchToggle: View {
             HStack(spacing: 4) {
                 Image(systemName: audioManager.isAutoSwitchEnabled ? "bolt.circle.fill" : "bolt.circle")
                     .font(.system(size: 12))
-                Text("Auto")
+                Text("Auto Switch")
                     .font(.system(size: 11, weight: .medium))
             }
-            .foregroundColor(audioManager.isAutoSwitchEnabled ? AppColors.graphite : .secondary)
+            .foregroundColor(.secondary)
         }
         .buttonStyle(.plain)
         .help(audioManager.isAutoSwitchEnabled ? "Disable auto-switching" : "Enable auto-switching")
