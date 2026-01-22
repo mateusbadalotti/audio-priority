@@ -71,7 +71,7 @@ struct MenuBarView: View {
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 14))
-                        .foregroundColor(.secondary.opacity(0.6))
+                        .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
                 .help("Quit")
@@ -159,7 +159,7 @@ struct SmoothVolumeSlider: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 13))
-                .foregroundColor(AppColors.graphite)
+                .foregroundColor(.secondary)
                 .frame(width: 20)
                 .animation(.easeInOut(duration: 0.15), value: icon)
 
@@ -175,7 +175,7 @@ struct SmoothVolumeSlider: View {
                 }
             )
             .controlSize(.small)
-            .tint(AppColors.graphite)
+            .tint(.secondary)
 
             Text(percentText)
                 .font(.system(size: 11, weight: .medium))
@@ -266,7 +266,7 @@ struct DeviceSectionView: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 11))
-                    .foregroundColor(AppColors.graphite)
+                    .foregroundColor(.secondary)
                 Text(title)
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.secondary)
