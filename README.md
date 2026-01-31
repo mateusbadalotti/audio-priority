@@ -6,7 +6,7 @@
 
 A native macOS menu bar app that automatically manages audio device priorities. Set your preferred order for speakers and microphones - the app automatically switches to the highest-priority connected device.
 
-![macOS 14+](https://img.shields.io/badge/macOS-13%2B-blue)
+![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-6.2-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
