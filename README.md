@@ -30,6 +30,11 @@ Website: https://badalotti.dev/audio-priority
 ### Requirements
 - macOS 14.0 or later
 
+### Homebrew (Cask)
+```bash
+brew install --cask mateusbadalotti/audio-priority/audio-priority
+```
+
 ### Build from Source
 
 1. Clone the repository:
