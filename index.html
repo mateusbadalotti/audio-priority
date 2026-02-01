@@ -213,46 +213,148 @@
         .install-commands {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 1rem;
         }
 
-        .install-code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--gray-500);
+        .install-option {
+            position: relative;
             background: var(--gray-950);
             border: 1px solid var(--gray-900);
-            padding: 0.75rem 1rem;
+            padding: 1rem 1.25rem;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .install-option:hover {
+            border-color: var(--gray-700);
+        }
+
+        .install-option.homebrew {
+            border-color: rgba(251, 191, 36, 0.3);
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.03) 0%, transparent 60%);
+        }
+
+        .install-option.homebrew:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .install-option.source {
+            border-color: rgba(139, 92, 246, 0.25);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.02) 0%, transparent 60%);
+        }
+
+        .install-option.source:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+
+        .install-header {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 0.75rem;
-            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
         }
 
-        .install-code .install-label {
-            flex-shrink: 0;
-            white-space: nowrap;
-        }
-
-        .install-code code {
-            color: var(--gray-300);
-            word-break: break-all;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .install-code button {
-            background: none;
-            border: none;
-            color: var(--gray-600);
-            cursor: pointer;
-            padding: 0.25rem;
-            transition: color 0.2s ease;
+        .install-icon {
+            width: 20px;
+            height: 20px;
             flex-shrink: 0;
         }
 
-        .install-code button:hover {
+        .install-icon.homebrew-icon {
+            color: #fbbf24;
+        }
+
+        .install-icon.source-icon {
+            color: #8b5cf6;
+        }
+
+        .install-method {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            font-weight: 500;
             color: var(--white);
+            letter-spacing: -0.01em;
+        }
+
+        .install-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.25rem 0.5rem;
+            margin-left: auto;
+        }
+
+        .install-badge.recommended {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .install-badge.advanced {
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.25);
+        }
+
+        .install-code-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+        }
+
+        .install-code-row code {
+            flex: 1;
+            color: var(--gray-400);
+            word-break: break-all;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--gray-800);
+            color: var(--gray-500);
+            cursor: pointer;
+            padding: 0.375rem 0.625rem;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .copy-btn:hover {
+            border-color: var(--gray-600);
+            color: var(--white);
+            background: var(--gray-900);
+        }
+
+        .copy-btn.copied {
+            border-color: #22c55e;
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .copy-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .copy-btn .check-icon {
+            display: none;
+        }
+
+        .copy-btn.copied .copy-icon {
+            display: none;
+        }
+
+        .copy-btn.copied .check-icon {
+            display: block;
         }
 
         .hero-visual {
@@ -710,26 +812,51 @@
                     </div>
 
                     <div class="install-commands">
-                        <div class="install-code">
-                            <span class="install-label">Homebrew:</span>
-                            <code>brew install --cask mateusbadalotti/audio-priority/audio-priority</code>
-                            <button onclick="navigator.clipboard.writeText('brew install --cask mateusbadalotti/audio-priority/audio-priority')" title="Copy">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        <div class="install-option homebrew">
+                            <div class="install-header">
+                                <svg class="install-icon homebrew-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M5.883 2.625A2.063 2.063 0 0 0 3.82 4.687v.938c0 .578.164 1.11.45 1.563L2.126 9.331a.75.75 0 0 0 .211.956l.469.35a.75.75 0 0 0 .77.053l.257-.124a7.458 7.458 0 0 0-.083 1.059v3.75a.75.75 0 0 0 .75.75h.375v5.063a.75.75 0 0 0 .75.75h12.75a.75.75 0 0 0 .75-.75v-5.063h.375a.75.75 0 0 0 .75-.75v-3.75c0-.358-.028-.71-.083-1.059l.257.124a.75.75 0 0 0 .77-.053l.469-.35a.75.75 0 0 0 .211-.956l-2.144-2.143c.286-.453.45-.985.45-1.563v-.938a2.063 2.063 0 0 0-2.063-2.062H5.883zM12 5.25a4.5 4.5 0 0 1 4.5 4.5v.75a.75.75 0 0 1-.75.75h-7.5a.75.75 0 0 1-.75-.75v-.75a4.5 4.5 0 0 1 4.5-4.5z"/>
                                 </svg>
-                            </button>
+                                <span class="install-method">Homebrew</span>
+                                <span class="install-badge recommended">Recommended</span>
+                            </div>
+                            <div class="install-code-row">
+                                <code>brew install --cask mateusbadalotti/audio-priority/audio-priority</code>
+                                <button class="copy-btn" onclick="copyCommand(this, 'brew install --cask mateusbadalotti/audio-priority/audio-priority')">
+                                    <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span class="copy-text">Copy</span>
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="install-code">
-                            <span class="install-label">Build from source:</span>
-                            <code>git clone https://github.com/mateusbadalotti/audio-priority.git && cd audio-priority && ./build.sh</code>
-                            <button onclick="navigator.clipboard.writeText('git clone https://github.com/mateusbadalotti/audio-priority.git && cd audio-priority && ./build.sh')" title="Copy">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        <div class="install-option source">
+                            <div class="install-header">
+                                <svg class="install-icon source-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="16 18 22 12 16 6"></polyline>
+                                    <polyline points="8 6 2 12 8 18"></polyline>
                                 </svg>
-                            </button>
+                                <span class="install-method">Build from Source</span>
+                                <span class="install-badge advanced">Advanced</span>
+                            </div>
+                            <div class="install-code-row">
+                                <code>git clone https://github.com/mateusbadalotti/audio-priority.git && cd audio-priority && ./build.sh</code>
+                                <button class="copy-btn" onclick="copyCommand(this, 'git clone https://github.com/mateusbadalotti/audio-priority.git && cd audio-priority && ./build.sh')">
+                                    <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span class="copy-text">Copy</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -807,5 +934,19 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        function copyCommand(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const textEl = btn.querySelector('.copy-text');
+                btn.classList.add('copied');
+                textEl.textContent = 'Copied';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    textEl.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+    </script>
 </body>
 </html>
