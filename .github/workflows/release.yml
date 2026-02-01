@@ -62,7 +62,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
 
           git clone "https://x-access-token:${TAP_TOKEN}@github.com/${TAP_REPO}.git" tap
-          git -C tap checkout master
+          if git -C tap rev-parse --verify master >/dev/null 2>&1; then
+            git -C tap checkout master
+          else
+            git -C tap checkout -b master
+          fi
           mkdir -p tap/Casks
 
           VERSION="${RELEASE_VERSION}"
@@ -88,4 +92,4 @@ jobs:
           cd tap
           git add Casks/audio-priority.rb
           git commit -m "Update audio-priority to ${VERSION}" || echo "No changes to commit."
-          git push
+          git push -u origin master
