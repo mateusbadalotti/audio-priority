@@ -210,6 +210,12 @@
             color: var(--white);
         }
 
+        .install-commands {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
         .install-code {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.75rem;
@@ -217,13 +223,22 @@
             background: var(--gray-950);
             border: 1px solid var(--gray-900);
             padding: 0.75rem 1rem;
-            display: inline-flex;
-            align-items: center;
+            display: flex;
+            align-items: flex-start;
             gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .install-code .install-label {
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .install-code code {
             color: var(--gray-300);
+            word-break: break-all;
+            flex: 1;
+            min-width: 0;
         }
 
         .install-code button {
@@ -233,6 +248,7 @@
             cursor: pointer;
             padding: 0.25rem;
             transition: color 0.2s ease;
+            flex-shrink: 0;
         }
 
         .install-code button:hover {
@@ -543,10 +559,6 @@
                 font-size: 1rem;
             }
 
-            .install-code {
-                display: none;
-            }
-
             .features {
                 padding: 3rem 0;
             }
@@ -592,6 +604,25 @@
 
             .permissions p {
                 font-size: 0.8125rem;
+            }
+
+            .install-code {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .install-code code {
+                font-size: 0.625rem;
+                line-height: 1.4;
+                padding: 0.5rem;
+                background: var(--gray-900);
+                border-radius: 2px;
+            }
+
+            .install-code button {
+                align-self: flex-end;
+                margin-top: -0.25rem;
             }
 
             .kofi-banner {
@@ -678,15 +709,28 @@
                         <a href="https://github.com/mateusbadalotti/audio-priority" class="btn btn-secondary">View Source</a>
                     </div>
 
-                    <div class="install-code">
-                        <span>Build:</span>
-                        <code>git clone https://github.com/mateusbadalotti/audio-priority.git && cd audio-priority && ./build.sh</code>
-                        <button onclick="navigator.clipboard.writeText('git clone https://github.com/mateusbadalotti/audio-priority.git && cd audio-priority && ./build.sh')" title="Copy">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                        </button>
+                    <div class="install-commands">
+                        <div class="install-code">
+                            <span class="install-label">Homebrew:</span>
+                            <code>brew install --cask mateusbadalotti/audio-priority/audio-priority</code>
+                            <button onclick="navigator.clipboard.writeText('brew install --cask mateusbadalotti/audio-priority/audio-priority')" title="Copy">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="install-code">
+                            <span class="install-label">Build from source:</span>
+                            <code>git clone https://github.com/mateusbadalotti/audio-priority.git && cd audio-priority && ./build.sh</code>
+                            <button onclick="navigator.clipboard.writeText('git clone https://github.com/mateusbadalotti/audio-priority.git && cd audio-priority && ./build.sh')" title="Copy">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

@@ -34,6 +34,7 @@ Website: https://badalotti.dev/audio-priority
 ```bash
 brew install --cask mateusbadalotti/audio-priority/audio-priority
 ```
+Updates via Homebrew.
 
 ### Build from Source
 
