@@ -32,7 +32,7 @@ Website: https://badalotti.dev/audio-priority
 
 ### Homebrew (Cask)
 ```bash
-brew install --cask mateusbadalotti/audio-priority/audio-priority
+brew install --cask mateusbadalotti/tap/audio-priority
 ```
 Updates via Homebrew.
 
