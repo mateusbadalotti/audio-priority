@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build-release:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: "16.2"
+          xcode-version: "latest-stable"
 
       - name: Resolve tag
         run: |
@@ -85,7 +85,7 @@ jobs:
             homepage "https://badalotti.dev/audio-priority"
 
             auto_updates false
-            depends_on macos: ">= :sonoma"
+            depends_on macos: ">= :tahoe"
 
             app "AudioPriority.app"
           end

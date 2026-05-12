@@ -11,10 +11,8 @@ struct DeviceListView: View {
     @State private var draggingIndex: Int? = nil
     @State private var targetIndex: Int? = nil
     
-    private let baseRowHeight: CGFloat = 32
-    private let rowHeightScale: CGFloat = 0.7
-    private let rowHeight: CGFloat
-    private let rowSpacing: CGFloat = 4
+    private let rowHeight: CGFloat = 28
+    private let rowSpacing: CGFloat = 7
 
     private var rowStride: CGFloat { rowHeight + rowSpacing }
     private var indexByDeviceId: [AudioObjectID: Int] {
@@ -33,7 +31,6 @@ struct DeviceListView: View {
         self.onMove = onMove
         self.onSelect = onSelect
         self.onHide = onHide
-        rowHeight = baseRowHeight * rowHeightScale
     }
 
     var body: some View {
@@ -120,14 +117,7 @@ struct DraggableDeviceRow: View {
     @State private var lastReportedTarget: Int? = nil
 
     private enum Style {
-        static let selectedGreenRed: Double = 48.0 / 255.0
-        static let selectedGreenGreen: Double = 227.0 / 255.0
-        static let selectedGreenBlue: Double = 79.0 / 255.0
-        static let selectedGreen = Color(
-            red: selectedGreenRed,
-            green: selectedGreenGreen,
-            blue: selectedGreenBlue
-        )
+        static let selectedGreen = Color(red: 48.0 / 255.0, green: 227.0 / 255.0, blue: 79.0 / 255.0)
     }
 
     private func calculateTarget(offset: CGFloat) -> Int? {
@@ -142,20 +132,41 @@ struct DraggableDeviceRow: View {
     }
 
     var body: some View {
+        Button(action: onSelect) {
+            rowContent
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(device.name)
+        .accessibilityValue(isSelected ? "Current device" : "Available device")
+        .contentShape(Rectangle())
+        .gesture(dragGesture)
+        .contextMenu {
+            if let onHide {
+                Button {
+                    onHide(device)
+                } label: {
+                    let deviceLabel = device.type == .input ? "microphone" : "speaker"
+                    Label("Ignore \(deviceLabel)", systemImage: "eye.slash")
+                }
+            }
+        }
+    }
+
+    private var rowContent: some View {
         HStack(spacing: 8) {
             ZStack {
                 Image(systemName: "line.3.horizontal")
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .frame(width: 36, height: rowHeight)
                     .opacity(isHovering || isDragging ? 1 : 0)
                     .scaleEffect(isHovering || isDragging ? 1 : 0.8)
 
                 Text("\(index + 1)")
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.secondary.opacity(0.8))
-                .opacity(isHovering || isDragging ? 0 : 1)
-                .scaleEffect(isHovering || isDragging ? 0.8 : 1)
+                    .foregroundStyle(.secondary.opacity(0.8))
+                    .opacity(isHovering || isDragging ? 0 : 1)
+                    .scaleEffect(isHovering || isDragging ? 0.8 : 1)
             }
             .frame(width: 36)
             .animation(.easeInOut(duration: 0.12), value: isDragging)
@@ -165,13 +176,13 @@ struct DraggableDeviceRow: View {
                     .font(.system(size: 13, weight: .regular))
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
 
                 Spacer(minLength: 12)
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(Style.selectedGreen)
+                        .foregroundStyle(Style.selectedGreen)
                         .font(.system(size: 15))
                         .transition(.scale.combined(with: .opacity))
                 }
@@ -181,15 +192,11 @@ struct DraggableDeviceRow: View {
         }
         .padding(.leading, 8)
         .padding(.trailing, 10)
-        .padding(.vertical, 5)
+        .padding(.vertical, 3)
         .opacity(isDragging ? 0.5 : 1.0)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(isSelected ? Color.secondary.opacity(0.12) : (isHovering ? Color.primary.opacity(0.06) : Color.clear))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(isSelected ? Color.secondary.opacity(0.8) : Color.clear, lineWidth: 1.5)
+        .liquidGlassRowBackground(
+            isActive: isSelected || isHovering || isDragging,
+            isProminent: isSelected
         )
         .overlay(alignment: .top) {
             if isDropTarget {
@@ -211,43 +218,29 @@ struct DraggableDeviceRow: View {
             }
         }
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: LiquidGlassMetrics.controlCornerRadius)
                 .stroke(isDragging ? Color.secondary : Color.clear, lineWidth: 2)
         )
         .scaleEffect(isDragging ? 1.02 : 1.0)
         .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isDragging)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onSelect()
-        }
-        .contextMenu {
-            if let onHide {
-                Button {
-                    onHide(device)
-                } label: {
-                    let deviceLabel = device.type == .input ? "microphone" : "speaker"
-                    Label("Ignore \(deviceLabel)", systemImage: "eye.slash")
+    }
+
+    private var dragGesture: some Gesture {
+        DragGesture(minimumDistance: 5)
+            .onChanged { value in
+                if !isDragging {
+                    onDragStarted()
+                }
+                let newTarget = calculateTarget(offset: value.translation.height)
+                if newTarget != lastReportedTarget {
+                    lastReportedTarget = newTarget
+                    onTargetChanged(newTarget)
                 }
             }
-
-        }
-        .gesture(
-            DragGesture(minimumDistance: 5)
-                .onChanged { value in
-                    if !isDragging {
-                        onDragStarted()
-                    }
-                    let newTarget = calculateTarget(offset: value.translation.height)
-                    if newTarget != lastReportedTarget {
-                        lastReportedTarget = newTarget
-                        onTargetChanged(newTarget)
-                    }
-                }
-                .onEnded { _ in
-                    lastReportedTarget = nil
-                    onDragEnded()
-                }
-        )
+            .onEnded { _ in
+                lastReportedTarget = nil
+                onDragEnded()
+            }
     }
 }
 

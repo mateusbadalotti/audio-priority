@@ -19,67 +19,79 @@ struct MenuBarView: View {
     @EnvironmentObject var audioManager: AudioManager
 
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 12) {
-                OutputVolumeSliderView()
-                MicVolumeSliderView()
+        LiquidGlassGroup(spacing: LiquidGlassMetrics.sectionSpacing) {
+            VStack(spacing: LiquidGlassMetrics.sectionSpacing) {
+                volumePanel
+                devicePanel
+                footerPanel
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .background(Color.primary.opacity(0.02))
+            .padding(LiquidGlassMetrics.outerPadding)
+        }
+        .frame(width: LiquidGlassMetrics.popoverWidth)
+    }
 
-            Divider()
-                .padding(.horizontal, 12)
+    private var volumePanel: some View {
+        VStack(spacing: 12) {
+            OutputVolumeSliderView()
+            MicVolumeSliderView()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .liquidGlassPanel(cornerRadius: LiquidGlassMetrics.panelCornerRadius)
+    }
 
-            VStack(spacing: 20) {
-                DeviceSectionView(
-                    title: "Speakers",
-                    icon: "speaker.wave.2.fill",
-                    devices: audioManager.speakerDevices,
-                    currentDeviceId: audioManager.currentOutputId,
-                    onMove: audioManager.moveSpeakerDevice,
-                    onSelect: audioManager.setOutputDevice,
-                    onHide: audioManager.hideDevice
-                )
+    private var devicePanel: some View {
+        VStack(spacing: 16) {
+            DeviceSectionView(
+                title: "Speakers",
+                icon: "speaker.wave.2.fill",
+                devices: audioManager.speakerDevices,
+                currentDeviceId: audioManager.currentOutputId,
+                onMove: audioManager.moveSpeakerDevice,
+                onSelect: audioManager.setOutputDevice,
+                onHide: audioManager.hideDevice
+            )
 
-                DeviceSectionView(
-                    title: "Microphones",
-                    icon: "mic.fill",
-                    devices: audioManager.inputDevices,
-                    currentDeviceId: audioManager.currentInputId,
-                    onMove: audioManager.moveInputDevice,
-                    onSelect: audioManager.setInputDevice,
-                    onHide: audioManager.hideDevice
-                )
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            DeviceSectionView(
+                title: "Microphones",
+                icon: "mic.fill",
+                devices: audioManager.inputDevices,
+                currentDeviceId: audioManager.currentInputId,
+                onMove: audioManager.moveInputDevice,
+                onSelect: audioManager.setInputDevice,
+                onHide: audioManager.hideDevice
+            )
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+    }
 
-            Divider()
-                .padding(.horizontal, 12)
+    private var footerPanel: some View {
+        LiquidGlassGroup(spacing: 8) {
+            HStack(spacing: 8) {
+                Spacer(minLength: 0)
 
-            HStack(spacing: 16) {
                 HiddenDevicesToggleView()
                     .transition(.opacity.combined(with: .scale(scale: 0.9)))
-
-                Spacer()
 
                 AutoSwitchToggle()
 
                 Button {
                     NSApplication.shared.terminate(nil)
                 } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(.secondary)
+                    Image(systemName: "power")
+                        .font(.system(size: 12, weight: .semibold))
+                        .frame(
+                            width: LiquidGlassMetrics.iconButtonSize,
+                            height: LiquidGlassMetrics.iconButtonSize
+                        )
                 }
-                .buttonStyle(.plain)
+                .liquidGlassIconButtonStyle()
+                .accessibilityLabel("Quit")
                 .help("Quit")
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
         }
-        .frame(width: 340)
+        .padding(.top, 2)
     }
 }
 
@@ -157,10 +169,12 @@ struct SmoothVolumeSlider: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.system(size: 13))
-                .foregroundColor(.secondary)
-                .frame(width: 20)
+            LiquidGlassAudioIcon(
+                systemName: icon,
+                size: LiquidGlassMetrics.compactAudioIconSize,
+                symbolSize: 10
+            )
+            .frame(width: 20)
                 .animation(.easeInOut(duration: 0.15), value: icon)
 
             Slider(
@@ -180,15 +194,15 @@ struct SmoothVolumeSlider: View {
             Text(percentText)
                 .font(.system(size: 11, weight: .medium))
                 .monospacedDigit()
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .frame(width: VolumeConstants.percentTextWidth, alignment: .trailing)
         }
-        .onChange(of: sliderValue) { newValue in
+        .onChange(of: sliderValue) { _, newValue in
             if isEditing {
                 scheduleUpdate(newValue)
             }
         }
-        .onChange(of: value) { newValue in
+        .onChange(of: value) { _, newValue in
             if !isEditing {
                 withAnimation(.linear(duration: VolumeConstants.smoothAnimationDuration)) {
                     sliderValue = Double(newValue)
@@ -263,21 +277,19 @@ struct DeviceSectionView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
+            HStack(spacing: 7) {
+                LiquidGlassAudioIcon(systemName: icon)
+
                 Text(title)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
                     .textCase(.uppercase)
-                    .tracking(0.5)
             }
 
             if devices.isEmpty {
                 Text("No devices")
                     .font(.system(size: 13))
-                    .foregroundColor(.secondary.opacity(0.7))
+                    .foregroundStyle(.secondary.opacity(0.7))
                     .italic()
                     .padding(.vertical, 10)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -302,11 +314,9 @@ struct HiddenDevicesToggleView: View {
         audioManager.hiddenInputDevices + audioManager.hiddenSpeakerDevices
     }
 
+    @ViewBuilder
     var body: some View {
-        if allHiddenDevices.isEmpty {
-            Text("")
-                .frame(height: 1)
-        } else {
+        if !allHiddenDevices.isEmpty {
             Button {
                 withAnimation(.easeInOut(duration: 0.15)) {
                     isExpanded.toggle()
@@ -314,17 +324,24 @@ struct HiddenDevicesToggleView: View {
             } label: {
                 Image(systemName: "eye.slash")
                     .font(.system(size: 12))
-                    .foregroundColor(.secondary)
+                    .frame(
+                        width: LiquidGlassMetrics.iconButtonSize,
+                        height: LiquidGlassMetrics.iconButtonSize
+                    )
             }
-            .buttonStyle(.plain)
+            .liquidGlassIconButtonStyle()
+            .accessibilityLabel("Show ignored devices")
             .popover(isPresented: $isExpanded, arrowEdge: .bottom) {
-                VStack(alignment: .leading, spacing: 4) {
-                    ForEach(allHiddenDevices, id: \.id) { device in
-                        HiddenDeviceRow(device: device)
+                LiquidGlassGroup(spacing: 4) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(allHiddenDevices, id: \.id) { device in
+                            HiddenDeviceRow(device: device)
+                        }
                     }
+                    .padding(12)
+                    .frame(minWidth: 220)
+                    .liquidGlassPanel(cornerRadius: LiquidGlassMetrics.panelCornerRadius)
                 }
-                .padding(12)
-                .frame(minWidth: 220)
             }
         }
     }
@@ -341,14 +358,16 @@ struct HiddenDeviceRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: deviceIcon)
-                .font(.system(size: 11))
-                .foregroundColor(.secondary)
-                .frame(width: 18)
+            LiquidGlassAudioIcon(
+                systemName: deviceIcon,
+                size: LiquidGlassMetrics.compactAudioIconSize,
+                symbolSize: 10
+            )
+            .frame(width: 20)
 
             Text(device.name)
                 .font(.system(size: 13))
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.tail)
 
@@ -360,19 +379,17 @@ struct HiddenDeviceRow: View {
                 } label: {
                     Image(systemName: "eye")
                         .font(.system(size: 13))
-                        .foregroundColor(.secondary)
+                        .frame(width: 24, height: 24)
                 }
-                .buttonStyle(.plain)
+                .liquidGlassIconButtonStyle()
+                .accessibilityLabel("Stop ignoring \(device.name)")
                 .help("Stop ignoring")
                 .transition(.opacity.combined(with: .scale(scale: 0.8)))
             }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(isHovering ? Color.primary.opacity(0.06) : Color.clear)
-        )
+        .liquidGlassRowBackground(isActive: isHovering)
         .animation(.easeInOut(duration: 0.15), value: isHovering)
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -391,15 +408,16 @@ struct AutoSwitchToggle: View {
                 audioManager.setAutoSwitchEnabled(!audioManager.isAutoSwitchEnabled)
             }
         } label: {
-            HStack(spacing: 4) {
-                Image(systemName: audioManager.isAutoSwitchEnabled ? "bolt.circle.fill" : "bolt.circle")
-                    .font(.system(size: 12))
-                Text("Auto Switch")
-                    .font(.system(size: 11, weight: .medium))
-            }
-            .foregroundColor(.secondary)
+            Image(systemName: audioManager.isAutoSwitchEnabled ? "bolt.fill" : "bolt")
+                .font(.system(size: 12, weight: .semibold))
+                .frame(
+                    width: LiquidGlassMetrics.iconButtonSize,
+                    height: LiquidGlassMetrics.iconButtonSize
+                )
         }
-        .buttonStyle(.plain)
+        .liquidGlassIconButtonStyle(isProminent: audioManager.isAutoSwitchEnabled)
+        .accessibilityLabel("Auto Switch")
+        .accessibilityValue(audioManager.isAutoSwitchEnabled ? "On" : "Off")
         .help(audioManager.isAutoSwitchEnabled ? "Disable auto-switching" : "Enable auto-switching")
     }
 }

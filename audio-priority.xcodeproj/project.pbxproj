@@ -13,6 +13,7 @@
 		A10000000000000000000004 /* PriorityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* PriorityManager.swift */; };
 		A10000000000000000000005 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* MenuBarView.swift */; };
 		A10000000000000000000006 /* DeviceListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* DeviceListView.swift */; };
+		A10000000000000000000007 /* LiquidGlassStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* LiquidGlassStyles.swift */; };
 		A10000000000000000000010 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* CoreAudio.framework */; };
 		A10000000000000000000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -25,6 +26,7 @@
 		A20000000000000000000005 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		A20000000000000000000006 /* DeviceListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceListView.swift; sourceTree = "<group>"; };
 		A20000000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A20000000000000000000008 /* LiquidGlassStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlassStyles.swift; sourceTree = "<group>"; };
 		A20000000000000000000010 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		A20000000000000000000020 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A30000000000000000000001 /* AudioPriority.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioPriority.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,6 +88,7 @@
 			children = (
 				A20000000000000000000005 /* MenuBarView.swift */,
 				A20000000000000000000006 /* DeviceListView.swift */,
+				A20000000000000000000008 /* LiquidGlassStyles.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -181,6 +184,7 @@
 				A10000000000000000000004 /* PriorityManager.swift in Sources */,
 				A10000000000000000000005 /* MenuBarView.swift in Sources */,
 				A10000000000000000000006 /* DeviceListView.swift in Sources */,
+				A10000000000000000000007 /* LiquidGlassStyles.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,7 +244,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -297,7 +301,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -312,7 +316,7 @@
 				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -325,7 +329,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.audiopriority;
 				PRODUCT_NAME = "AudioPriority";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -340,7 +344,7 @@
 				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -353,7 +357,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.audiopriority;
 				PRODUCT_NAME = "AudioPriority";
 				SWIFT_EMIT_LOC_STRINGS = YES;
