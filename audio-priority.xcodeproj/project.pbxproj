@@ -14,6 +14,10 @@
 		A10000000000000000000005 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* MenuBarView.swift */; };
 		A10000000000000000000006 /* DeviceListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* DeviceListView.swift */; };
 		A10000000000000000000007 /* LiquidGlassStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* LiquidGlassStyles.swift */; };
+		A10000000000000000000008 /* ApplicationAudioSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* ApplicationAudioSource.swift */; };
+		A10000000000000000000009 /* ApplicationAudioService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* ApplicationAudioService.swift */; };
+		A1000000000000000000000A /* ApplicationVolumeEngine.mm in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* ApplicationVolumeEngine.mm */; };
+		A1000000000000000000000B /* VolumeMixerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* VolumeMixerView.swift */; };
 		A10000000000000000000010 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* CoreAudio.framework */; };
 		A10000000000000000000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -27,6 +31,12 @@
 		A20000000000000000000006 /* DeviceListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceListView.swift; sourceTree = "<group>"; };
 		A20000000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000000000000000000008 /* LiquidGlassStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlassStyles.swift; sourceTree = "<group>"; };
+		A20000000000000000000009 /* ApplicationAudioSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationAudioSource.swift; sourceTree = "<group>"; };
+		A20000000000000000000011 /* ApplicationAudioService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationAudioService.swift; sourceTree = "<group>"; };
+		A20000000000000000000012 /* ApplicationVolumeEngine.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ApplicationVolumeEngine.mm; sourceTree = "<group>"; };
+		A20000000000000000000013 /* ApplicationVolumeEngine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ApplicationVolumeEngine.h; sourceTree = "<group>"; };
+		A20000000000000000000014 /* AudioPriority-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudioPriority-Bridging-Header.h"; sourceTree = "<group>"; };
+		A20000000000000000000015 /* VolumeMixerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeMixerView.swift; sourceTree = "<group>"; };
 		A20000000000000000000010 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		A20000000000000000000020 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A30000000000000000000001 /* AudioPriority.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioPriority.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -60,6 +70,7 @@
 				A50000000000000000000003 /* Models */,
 				A50000000000000000000004 /* Services */,
 				A50000000000000000000005 /* Views */,
+				A20000000000000000000014 /* AudioPriority-Bridging-Header.h */,
 				A20000000000000000000020 /* Assets.xcassets */,
 				A20000000000000000000007 /* Info.plist */,
 			);
@@ -70,6 +81,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000002 /* AudioDevice.swift */,
+				A20000000000000000000009 /* ApplicationAudioSource.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -79,6 +91,9 @@
 			children = (
 				A20000000000000000000003 /* AudioDeviceService.swift */,
 				A20000000000000000000004 /* PriorityManager.swift */,
+				A20000000000000000000011 /* ApplicationAudioService.swift */,
+				A20000000000000000000012 /* ApplicationVolumeEngine.mm */,
+				A20000000000000000000013 /* ApplicationVolumeEngine.h */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -89,6 +104,7 @@
 				A20000000000000000000005 /* MenuBarView.swift */,
 				A20000000000000000000006 /* DeviceListView.swift */,
 				A20000000000000000000008 /* LiquidGlassStyles.swift */,
+				A20000000000000000000015 /* VolumeMixerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -185,6 +201,10 @@
 				A10000000000000000000005 /* MenuBarView.swift in Sources */,
 				A10000000000000000000006 /* DeviceListView.swift in Sources */,
 				A10000000000000000000007 /* LiquidGlassStyles.swift in Sources */,
+				A10000000000000000000008 /* ApplicationAudioSource.swift in Sources */,
+				A10000000000000000000009 /* ApplicationAudioService.swift in Sources */,
+				A1000000000000000000000A /* ApplicationVolumeEngine.mm in Sources */,
+				A1000000000000000000000B /* VolumeMixerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -316,7 +336,7 @@
 				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -329,10 +349,11 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.0.0;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.audiopriority;
 				PRODUCT_NAME = "AudioPriority";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "audio-priority/AudioPriority-Bridging-Header.h";
 				SWIFT_VERSION = 6.2;
 			};
 			name = Debug;
@@ -344,7 +365,7 @@
 				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -357,10 +378,11 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 2.0.0;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.audiopriority;
 				PRODUCT_NAME = "AudioPriority";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "audio-priority/AudioPriority-Bridging-Header.h";
 				SWIFT_VERSION = 6.2;
 			};
 			name = Release;

@@ -9,6 +9,7 @@ final class AudioDeviceService: @unchecked Sendable {
     private var listenerBlock: AudioObjectPropertyListenerBlock?
     private var volumeListenerBlock: AudioObjectPropertyListenerBlock?
     private var monitoredDeviceIds: Set<AudioObjectID> = []
+    private let applicationVolumeDeviceUIDPrefix = "app.audiopriority.volume."
 
     func getDevices() -> [AudioDevice] {
         var propertyAddress = AudioObjectPropertyAddress(
@@ -53,6 +54,9 @@ final class AudioDeviceService: @unchecked Sendable {
 
             guard let name = getDeviceName(id: deviceId) else { continue }
             guard let uid = getDeviceUID(id: deviceId) else { continue }
+            if uid.hasPrefix(applicationVolumeDeviceUIDPrefix) {
+                continue
+            }
 
             if hasInput {
                 devices.append(AudioDevice(id: deviceId, uid: uid, name: name, type: .input))
@@ -381,8 +385,8 @@ final class AudioDeviceService: @unchecked Sendable {
             mElement: kAudioObjectPropertyElementMain
         )
 
-        var name: CFString = "" as CFString
-        var dataSize = UInt32(MemoryLayout<CFString>.size)
+        var name: Unmanaged<CFString>?
+        var dataSize = UInt32(MemoryLayout<Unmanaged<CFString>?>.size)
 
         let status = AudioObjectGetPropertyData(
             id,
@@ -393,7 +397,8 @@ final class AudioDeviceService: @unchecked Sendable {
             &name
         )
 
-        return status == noErr ? name as String : nil
+        guard status == noErr, let name else { return nil }
+        return name.takeRetainedValue() as String
     }
 
     private func getDeviceUID(id: AudioObjectID) -> String? {
@@ -403,8 +408,8 @@ final class AudioDeviceService: @unchecked Sendable {
             mElement: kAudioObjectPropertyElementMain
         )
 
-        var uid: CFString = "" as CFString
-        var dataSize = UInt32(MemoryLayout<CFString>.size)
+        var uid: Unmanaged<CFString>?
+        var dataSize = UInt32(MemoryLayout<Unmanaged<CFString>?>.size)
 
         let status = AudioObjectGetPropertyData(
             id,
@@ -415,7 +420,8 @@ final class AudioDeviceService: @unchecked Sendable {
             &uid
         )
 
-        return status == noErr ? uid as String : nil
+        guard status == noErr, let uid else { return nil }
+        return uid.takeRetainedValue() as String
     }
 
     deinit {

@@ -15,35 +15,45 @@ private enum VolumeConstants {
     static let midVolumeThreshold: Float = 0.66
 }
 
-struct MenuBarView: View {
-    @EnvironmentObject var audioManager: AudioManager
+struct VolumeMixerDisclosure {
+    let sourceCount: Int
+    let isExpanded: Bool
+    let toggle: () -> Void
+}
 
+struct MenuBarView: View {
     var body: some View {
         LiquidGlassGroup(spacing: LiquidGlassMetrics.sectionSpacing) {
             VStack(spacing: LiquidGlassMetrics.sectionSpacing) {
-                volumePanel
-                devicePanel
-                footerPanel
+                VolumePanel()
+                DevicePanel()
+                FooterPanel()
             }
             .padding(LiquidGlassMetrics.outerPadding)
         }
         .frame(width: LiquidGlassMetrics.popoverWidth)
     }
+}
 
-    private var volumePanel: some View {
-        VStack(spacing: 12) {
-            OutputVolumeSliderView()
+private struct VolumePanel: View {
+    var body: some View {
+        VStack(spacing: 10) {
+            VolumeMixerSectionView()
             MicVolumeSliderView()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .liquidGlassPanel(cornerRadius: LiquidGlassMetrics.panelCornerRadius)
     }
+}
 
-    private var devicePanel: some View {
+private struct DevicePanel: View {
+    @Environment(AudioManager.self) private var audioManager
+
+    var body: some View {
         VStack(spacing: 16) {
             DeviceSectionView(
-                title: "Speakers",
+                title: "SPEAKERS",
                 icon: "speaker.wave.2.fill",
                 devices: audioManager.speakerDevices,
                 currentDeviceId: audioManager.currentOutputId,
@@ -53,7 +63,7 @@ struct MenuBarView: View {
             )
 
             DeviceSectionView(
-                title: "Microphones",
+                title: "MICROPHONES",
                 icon: "mic.fill",
                 devices: audioManager.inputDevices,
                 currentDeviceId: audioManager.currentInputId,
@@ -65,8 +75,10 @@ struct MenuBarView: View {
         .padding(.horizontal, 6)
         .padding(.vertical, 2)
     }
+}
 
-    private var footerPanel: some View {
+private struct FooterPanel: View {
+    var body: some View {
         LiquidGlassGroup(spacing: 8) {
             HStack(spacing: 8) {
                 Spacer(minLength: 0)
@@ -96,9 +108,10 @@ struct MenuBarView: View {
 }
 
 struct OutputVolumeSliderView: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @Environment(AudioManager.self) private var audioManager
+    var volumeMixerDisclosure: VolumeMixerDisclosure?
 
-    var volumeIcon: String {
+    private var volumeIcon: String {
         if audioManager.volume <= VolumeConstants.minVolume {
             return "speaker.fill"
         } else if audioManager.volume < VolumeConstants.lowVolumeThreshold {
@@ -113,19 +126,22 @@ struct OutputVolumeSliderView: View {
     var body: some View {
         SmoothVolumeSlider(
             icon: volumeIcon,
+            accessibilityLabel: "Output volume",
             value: audioManager.volume,
             isAvailable: audioManager.isOutputVolumeAvailable,
+            volumeMixerDisclosure: volumeMixerDisclosure,
             onChange: audioManager.setVolume
         )
     }
 }
 
 struct MicVolumeSliderView: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @Environment(AudioManager.self) private var audioManager
 
     var body: some View {
         SmoothVolumeSlider(
             icon: "mic.fill",
+            accessibilityLabel: "Microphone volume",
             value: audioManager.micVolume,
             isAvailable: audioManager.isInputVolumeAvailable,
             onChange: audioManager.setMicVolume
@@ -134,19 +150,32 @@ struct MicVolumeSliderView: View {
 }
 
 struct SmoothVolumeSlider: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     let icon: String
+    let accessibilityLabel: LocalizedStringResource
     let value: Float
     let isAvailable: Bool
+    let volumeMixerDisclosure: VolumeMixerDisclosure?
     let onChange: (Float) -> Void
 
     @State private var sliderValue: Double
     @State private var isEditing = false
     @State private var pendingUpdate: DispatchWorkItem?
 
-    init(icon: String, value: Float, isAvailable: Bool, onChange: @escaping (Float) -> Void) {
+    init(
+        icon: String,
+        accessibilityLabel: LocalizedStringResource,
+        value: Float,
+        isAvailable: Bool,
+        volumeMixerDisclosure: VolumeMixerDisclosure? = nil,
+        onChange: @escaping (Float) -> Void
+    ) {
         self.icon = icon
+        self.accessibilityLabel = accessibilityLabel
         self.value = value
         self.isAvailable = isAvailable
+        self.volumeMixerDisclosure = volumeMixerDisclosure
         self.onChange = onChange
         _sliderValue = State(initialValue: Double(value))
     }
@@ -175,7 +204,10 @@ struct SmoothVolumeSlider: View {
                 symbolSize: 10
             )
             .frame(width: 20)
-                .animation(.easeInOut(duration: 0.15), value: icon)
+                .animation(
+                    reduceMotion ? nil : .easeInOut(duration: 0.15),
+                    value: icon
+                )
 
             Slider(
                 value: $sliderValue,
@@ -190,12 +222,13 @@ struct SmoothVolumeSlider: View {
             )
             .controlSize(.small)
             .tint(.secondary)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityValue(percentText)
 
-            Text(percentText)
-                .font(.system(size: 11, weight: .medium))
-                .monospacedDigit()
-                .foregroundStyle(.secondary)
-                .frame(width: VolumeConstants.percentTextWidth, alignment: .trailing)
+            VolumePercentageView(
+                text: percentText,
+                volumeMixerDisclosure: volumeMixerDisclosure
+            )
         }
         .onChange(of: sliderValue) { _, newValue in
             if isEditing {
@@ -204,7 +237,11 @@ struct SmoothVolumeSlider: View {
         }
         .onChange(of: value) { _, newValue in
             if !isEditing {
-                withAnimation(.linear(duration: VolumeConstants.smoothAnimationDuration)) {
+                withAnimation(
+                    reduceMotion
+                        ? nil
+                        : .linear(duration: VolumeConstants.smoothAnimationDuration)
+                ) {
                     sliderValue = Double(newValue)
                 }
             }
@@ -225,6 +262,51 @@ struct SmoothVolumeSlider: View {
             deadline: .now() + VolumeConstants.updateDebounceInterval,
             execute: workItem
         )
+    }
+}
+
+private struct VolumePercentageView: View {
+    let text: String
+    let volumeMixerDisclosure: VolumeMixerDisclosure?
+
+    var body: some View {
+        if let volumeMixerDisclosure {
+            Button(action: volumeMixerDisclosure.toggle) {
+                percentageLabel
+                    .contentShape(.rect)
+            }
+            .buttonStyle(ResponsivePlainButtonStyle())
+            .accessibilityLabel("Volume Mixer")
+            .accessibilityValue(
+                "\(trimmedText), \(volumeMixerDisclosure.sourceCount) audio sources, "
+                    + (volumeMixerDisclosure.isExpanded ? "expanded" : "collapsed")
+            )
+            .accessibilityHint(
+                volumeMixerDisclosure.isExpanded
+                    ? "Collapse Volume Mixer"
+                    : "Show Volume Mixer"
+            )
+            .help(
+                volumeMixerDisclosure.isExpanded
+                    ? "Hide Volume Mixer"
+                    : "Show Volume Mixer"
+            )
+        } else {
+            percentageLabel
+                .accessibilityHidden(true)
+        }
+    }
+
+    private var trimmedText: String {
+        text.trimmingCharacters(in: .whitespaces)
+    }
+
+    private var percentageLabel: some View {
+        Text(text)
+            .font(.system(size: 11, weight: .medium))
+            .monospacedDigit()
+            .foregroundStyle(.secondary)
+            .frame(width: VolumeConstants.percentTextWidth, alignment: .trailing)
     }
 }
 
@@ -267,7 +349,7 @@ extension View {
 }
 
 struct DeviceSectionView: View {
-    let title: String
+    let title: LocalizedStringResource
     let icon: String
     let devices: [AudioDevice]
     let currentDeviceId: AudioObjectID?
@@ -283,7 +365,6 @@ struct DeviceSectionView: View {
                 Text(title)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
             }
 
             if devices.isEmpty {
@@ -307,18 +388,18 @@ struct DeviceSectionView: View {
 }
 
 struct HiddenDevicesToggleView: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(AudioManager.self) private var audioManager
     @State private var isExpanded = false
 
-    var allHiddenDevices: [AudioDevice] {
+    private var allHiddenDevices: [AudioDevice] {
         audioManager.hiddenInputDevices + audioManager.hiddenSpeakerDevices
     }
 
-    @ViewBuilder
     var body: some View {
         if !allHiddenDevices.isEmpty {
             Button {
-                withAnimation(.easeInOut(duration: 0.15)) {
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.15)) {
                     isExpanded.toggle()
                 }
             } label: {
@@ -334,7 +415,7 @@ struct HiddenDevicesToggleView: View {
             .popover(isPresented: $isExpanded, arrowEdge: .bottom) {
                 LiquidGlassGroup(spacing: 4) {
                     VStack(alignment: .leading, spacing: 4) {
-                        ForEach(allHiddenDevices, id: \.id) { device in
+                        ForEach(allHiddenDevices) { device in
                             HiddenDeviceRow(device: device)
                         }
                     }
@@ -348,11 +429,12 @@ struct HiddenDevicesToggleView: View {
 }
 
 struct HiddenDeviceRow: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(AudioManager.self) private var audioManager
     let device: AudioDevice
     @State private var isHovering = false
 
-    var deviceIcon: String {
+    private var deviceIcon: String {
         device.type == .input ? "mic.fill" : "speaker.wave.2.fill"
     }
 
@@ -390,9 +472,15 @@ struct HiddenDeviceRow: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .liquidGlassRowBackground(isActive: isHovering)
-        .animation(.easeInOut(duration: 0.15), value: isHovering)
+        .accessibilityAction(named: "Stop ignoring") {
+            audioManager.unhideDevice(device)
+        }
+        .animation(
+            reduceMotion ? nil : .easeInOut(duration: 0.15),
+            value: isHovering
+        )
         .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.15)) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.15)) {
                 isHovering = hovering
             }
         }
@@ -400,11 +488,12 @@ struct HiddenDeviceRow: View {
 }
 
 struct AutoSwitchToggle: View {
-    @EnvironmentObject var audioManager: AudioManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(AudioManager.self) private var audioManager
 
     var body: some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.15)) {
                 audioManager.setAutoSwitchEnabled(!audioManager.isAutoSwitchEnabled)
             }
         } label: {

@@ -2,23 +2,21 @@ import SwiftUI
 import CoreAudio
 
 struct DeviceListView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     let devices: [AudioDevice]
     let currentDeviceId: AudioObjectID?
     let onMove: (IndexSet, Int) -> Void
     let onSelect: (AudioDevice) -> Void
     var onHide: ((AudioDevice) -> Void)?
 
-    @State private var draggingIndex: Int? = nil
-    @State private var targetIndex: Int? = nil
+    @State private var draggingIndex: Int?
+    @State private var targetIndex: Int?
     
     private let rowHeight: CGFloat = 28
     private let rowSpacing: CGFloat = 7
 
     private var rowStride: CGFloat { rowHeight + rowSpacing }
-    private var indexByDeviceId: [AudioObjectID: Int] {
-        Dictionary(uniqueKeysWithValues: devices.enumerated().map { ($0.element.id, $0.offset) })
-    }
-
     init(
         devices: [AudioDevice],
         currentDeviceId: AudioObjectID?,
@@ -34,10 +32,8 @@ struct DeviceListView: View {
     }
 
     var body: some View {
-        let indexByDeviceId = indexByDeviceId
         VStack(spacing: rowSpacing) {
-            ForEach(devices, id: \.id) { device in
-                let index = indexByDeviceId[device.id] ?? 0
+            ForEach(devices.enumerated(), id: \.element.id) { index, device in
                 DraggableDeviceRow(
                     device: device,
                     index: index,
@@ -62,7 +58,10 @@ struct DeviceListView: View {
                 )
                 .offset(y: rowOffset(for: index))
                 .zIndex(draggingIndex == index ? 100 : 0)
-                .animation(.easeInOut(duration: 0.12), value: targetIndex)
+                .animation(
+                    reduceMotion ? nil : .easeInOut(duration: 0.12),
+                    value: targetIndex
+                )
             }
         }
     }
@@ -98,6 +97,8 @@ struct DeviceListView: View {
 }
 
 struct DraggableDeviceRow: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     let device: AudioDevice
     let index: Int
     let isSelected: Bool
@@ -114,7 +115,7 @@ struct DraggableDeviceRow: View {
     let onDragEnded: () -> Void
     
     @State private var isHovering = false
-    @State private var lastReportedTarget: Int? = nil
+    @State private var lastReportedTarget: Int?
 
     private enum Style {
         static let selectedGreen = Color(red: 48.0 / 255.0, green: 227.0 / 255.0, blue: 79.0 / 255.0)
@@ -169,7 +170,10 @@ struct DraggableDeviceRow: View {
                     .scaleEffect(isHovering || isDragging ? 0.8 : 1)
             }
             .frame(width: 36)
-            .animation(.easeInOut(duration: 0.12), value: isDragging)
+            .animation(
+                reduceMotion ? nil : .easeInOut(duration: 0.12),
+                value: isDragging
+            )
 
             HStack(spacing: 8) {
                 Text(device.name)
@@ -187,7 +191,10 @@ struct DraggableDeviceRow: View {
                         .transition(.scale.combined(with: .opacity))
                 }
             }
-            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isSelected)
+            .animation(
+                reduceMotion ? nil : .spring(response: 0.25, dampingFraction: 0.7),
+                value: isSelected
+            )
 
         }
         .padding(.leading, 8)
@@ -213,7 +220,7 @@ struct DraggableDeviceRow: View {
             }
         }
         .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.12)) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.12)) {
                 isHovering = hovering
             }
         }
@@ -222,7 +229,10 @@ struct DraggableDeviceRow: View {
                 .stroke(isDragging ? Color.secondary : Color.clear, lineWidth: 2)
         )
         .scaleEffect(isDragging ? 1.02 : 1.0)
-        .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isDragging)
+        .animation(
+            reduceMotion ? nil : .spring(response: 0.25, dampingFraction: 0.7),
+            value: isDragging
+        )
     }
 
     private var dragGesture: some Gesture {

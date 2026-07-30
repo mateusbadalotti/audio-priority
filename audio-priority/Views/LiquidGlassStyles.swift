@@ -13,11 +13,19 @@ enum LiquidGlassMetrics {
 
 struct LiquidGlassGroup<Content: View>: View {
     let spacing: CGFloat
-    @ViewBuilder let content: () -> Content
+    @ViewBuilder let content: Content
+
+    init(
+        spacing: CGFloat,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.spacing = spacing
+        self.content = content()
+    }
 
     var body: some View {
         GlassEffectContainer(spacing: spacing) {
-            content()
+            content
         }
     }
 }
@@ -39,6 +47,20 @@ struct LiquidGlassAudioIcon: View {
                 in: Circle()
             )
             .accessibilityHidden(true)
+    }
+}
+
+struct ResponsivePlainButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.78 : 1)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.98 : 1)
+            .animation(
+                reduceMotion ? nil : .easeOut(duration: 0.12),
+                value: configuration.isPressed
+            )
     }
 }
 
