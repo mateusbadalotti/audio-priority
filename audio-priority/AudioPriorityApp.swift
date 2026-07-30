@@ -35,12 +35,9 @@ final class AudioManager {
     var micVolume: Float = 0
     var isOutputVolumeAvailable: Bool = true
     var isInputVolumeAvailable: Bool = true
-    var applicationAudioSources: [ApplicationAudioSource] = []
-    var applicationAudioMessage: String?
     private let defaults = UserDefaults.standard
     private let autoSwitchDefaultsKey = "autoSwitchEnabled"
     private let deviceService = AudioDeviceService()
-    private let applicationAudioService = ApplicationAudioService()
     private let priorityManager = PriorityManager()
     private var cachedDevices: [AudioDevice] = []
     private var pendingDeviceRefresh: DispatchWorkItem?
@@ -86,7 +83,6 @@ final class AudioManager {
         refreshMicVolume()
         setupDeviceChangeListener()
         setupVolumeListener()
-        setupApplicationAudio()
         if isAutoSwitchEnabled {
             applyHighestPriorityInput()
             applyHighestPriorityOutput()
@@ -97,19 +93,6 @@ final class AudioManager {
         deviceService.onVolumeChanged = { [weak self] in
             self?.scheduleVolumeRefresh()
         }
-    }
-
-    private func setupApplicationAudio() {
-        applicationAudioService.onSourcesChanged = { [weak self] sources in
-            self?.applyApplicationAudioSources(sources)
-        }
-        applicationAudioService.startListening()
-        if let message = applicationAudioService.setOutputDevice(
-            deviceService.getCurrentDefaultDevice(type: .output)
-        ) {
-            applicationAudioMessage = message
-        }
-        refreshApplicationAudioSources()
     }
 
     private func handleVolumeChange() {
@@ -157,9 +140,6 @@ final class AudioManager {
         hiddenSpeakerDevices = regularHiddenOutputs
         currentInputId = deviceService.getCurrentDefaultDevice(type: .input)
         currentOutputId = deviceService.getCurrentDefaultDevice(type: .output)
-        if let message = applicationAudioService.setOutputDevice(currentOutputId) {
-            applicationAudioMessage = message
-        }
     }
 
     private func performDeviceRefresh() {
@@ -210,32 +190,6 @@ final class AudioManager {
             applyHighestPriorityInput()
             applyHighestPriorityOutput()
         }
-    }
-
-    private func refreshApplicationAudioSources() {
-        applyApplicationAudioSources(applicationAudioService.getSources())
-    }
-
-    func setApplicationVolume(_ volume: Float, for sourceID: AudioObjectID) {
-        guard let index = applicationAudioSources.firstIndex(where: { $0.id == sourceID }) else {
-            return
-        }
-
-        applicationAudioSources[index].volume = volume
-        if let message = applicationAudioService.setVolume(volume, for: sourceID) {
-            applicationAudioSources[index].volume = 1
-            applicationAudioMessage = message
-        } else {
-            applicationAudioMessage = nil
-        }
-    }
-
-    func dismissApplicationAudioMessage() {
-        applicationAudioMessage = nil
-    }
-
-    private func applyApplicationAudioSources(_ sources: [ApplicationAudioSource]) {
-        applicationAudioSources = sources
     }
 
     func hideDevice(_ device: AudioDevice) {
@@ -295,9 +249,6 @@ final class AudioManager {
         }
         deviceService.setDefaultDevice(device.id, type: .output)
         currentOutputId = device.id
-        if let message = applicationAudioService.setOutputDevice(device.id) {
-            applicationAudioMessage = message
-        }
         refreshVolume()
     }
 
@@ -311,10 +262,6 @@ final class AudioManager {
         if let first = speakerDevices.first {
             applyOutputDevice(first)
         }
-    }
-
-    deinit {
-        applicationAudioService.stopListening()
     }
 
     private func fetchDevices(_ completion: @escaping @MainActor @Sendable ([AudioDevice]) -> Void) {

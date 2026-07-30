@@ -15,12 +15,6 @@ private enum VolumeConstants {
     static let midVolumeThreshold: Float = 0.66
 }
 
-struct VolumeMixerDisclosure {
-    let sourceCount: Int
-    let isExpanded: Bool
-    let toggle: () -> Void
-}
-
 struct MenuBarView: View {
     var body: some View {
         LiquidGlassGroup(spacing: LiquidGlassMetrics.sectionSpacing) {
@@ -38,7 +32,7 @@ struct MenuBarView: View {
 private struct VolumePanel: View {
     var body: some View {
         VStack(spacing: 10) {
-            VolumeMixerSectionView()
+            OutputVolumeSliderView()
             MicVolumeSliderView()
         }
         .padding(.horizontal, 12)
@@ -109,7 +103,6 @@ private struct FooterPanel: View {
 
 struct OutputVolumeSliderView: View {
     @Environment(AudioManager.self) private var audioManager
-    var volumeMixerDisclosure: VolumeMixerDisclosure?
 
     private var volumeIcon: String {
         if audioManager.volume <= VolumeConstants.minVolume {
@@ -129,7 +122,6 @@ struct OutputVolumeSliderView: View {
             accessibilityLabel: "Output volume",
             value: audioManager.volume,
             isAvailable: audioManager.isOutputVolumeAvailable,
-            volumeMixerDisclosure: volumeMixerDisclosure,
             onChange: audioManager.setVolume
         )
     }
@@ -156,7 +148,6 @@ struct SmoothVolumeSlider: View {
     let accessibilityLabel: LocalizedStringResource
     let value: Float
     let isAvailable: Bool
-    let volumeMixerDisclosure: VolumeMixerDisclosure?
     let onChange: (Float) -> Void
 
     @State private var sliderValue: Double
@@ -168,14 +159,12 @@ struct SmoothVolumeSlider: View {
         accessibilityLabel: LocalizedStringResource,
         value: Float,
         isAvailable: Bool,
-        volumeMixerDisclosure: VolumeMixerDisclosure? = nil,
         onChange: @escaping (Float) -> Void
     ) {
         self.icon = icon
         self.accessibilityLabel = accessibilityLabel
         self.value = value
         self.isAvailable = isAvailable
-        self.volumeMixerDisclosure = volumeMixerDisclosure
         self.onChange = onChange
         _sliderValue = State(initialValue: Double(value))
     }
@@ -225,10 +214,12 @@ struct SmoothVolumeSlider: View {
             .accessibilityLabel(accessibilityLabel)
             .accessibilityValue(percentText)
 
-            VolumePercentageView(
-                text: percentText,
-                volumeMixerDisclosure: volumeMixerDisclosure
-            )
+            Text(percentText)
+                .font(.system(size: 11, weight: .medium))
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+                .frame(width: VolumeConstants.percentTextWidth, alignment: .trailing)
+                .accessibilityHidden(true)
         }
         .onChange(of: sliderValue) { _, newValue in
             if isEditing {
@@ -262,51 +253,6 @@ struct SmoothVolumeSlider: View {
             deadline: .now() + VolumeConstants.updateDebounceInterval,
             execute: workItem
         )
-    }
-}
-
-private struct VolumePercentageView: View {
-    let text: String
-    let volumeMixerDisclosure: VolumeMixerDisclosure?
-
-    var body: some View {
-        if let volumeMixerDisclosure {
-            Button(action: volumeMixerDisclosure.toggle) {
-                percentageLabel
-                    .contentShape(.rect)
-            }
-            .buttonStyle(ResponsivePlainButtonStyle())
-            .accessibilityLabel("Volume Mixer")
-            .accessibilityValue(
-                "\(trimmedText), \(volumeMixerDisclosure.sourceCount) audio sources, "
-                    + (volumeMixerDisclosure.isExpanded ? "expanded" : "collapsed")
-            )
-            .accessibilityHint(
-                volumeMixerDisclosure.isExpanded
-                    ? "Collapse Volume Mixer"
-                    : "Show Volume Mixer"
-            )
-            .help(
-                volumeMixerDisclosure.isExpanded
-                    ? "Hide Volume Mixer"
-                    : "Show Volume Mixer"
-            )
-        } else {
-            percentageLabel
-                .accessibilityHidden(true)
-        }
-    }
-
-    private var trimmedText: String {
-        text.trimmingCharacters(in: .whitespaces)
-    }
-
-    private var percentageLabel: some View {
-        Text(text)
-            .font(.system(size: 11, weight: .medium))
-            .monospacedDigit()
-            .foregroundStyle(.secondary)
-            .frame(width: VolumeConstants.percentTextWidth, alignment: .trailing)
     }
 }
 

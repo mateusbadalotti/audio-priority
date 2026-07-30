@@ -21,7 +21,6 @@ Website: https://badalotti.dev/audio-priority
 - **Ignore devices**: Hide devices from the list.
 - **Drag-to-reorder**: Reorder devices by dragging.
 - **Speaker and mic volume**: Adjust both volumes with a slider or scroll wheel.
-- **Per-app volume**: Independently attenuate apps that are currently playing audio, with every source starting at 100%.
 - **Graceful volume fallback**: Shows "-" when the system volume is unavailable.
 - **Auto-switch toggle**: Enable or disable automatic device switching.
 - **Menu bar integration**: Lightweight, always-available controls.
@@ -71,10 +70,6 @@ Check the [Releases](https://github.com/mateusbadalotti/audio-priority/releases)
 
 Use the **Auto** toggle in the footer to enable or disable automatic device switching.
 
-### Volume Mixer
-
-Click the main output percentage to expand **Volume Mixer** and control apps that are currently playing audio. The section stays hidden when no app is producing sound. macOS requests System Audio Recording access the first time a source is set below 100%.
-
 ## How It Works
 
 1. **Device Discovery**: Uses CoreAudio to enumerate audio devices and listen for changes.
@@ -87,16 +82,13 @@ Click the main output percentage to expand **Volume Mixer** and control apps tha
 audio-priority/
 ├── AudioPriorityApp.swift    # App entry, MenuBarExtra, AudioManager
 ├── Models/
-│   ├── AudioDevice.swift             # Device model
-│   └── ApplicationAudioSource.swift  # Per-process audio source
+│   └── AudioDevice.swift          # Device model
 ├── Services/
-│   ├── AudioDeviceService.swift      # CoreAudio device wrapper
-│   ├── ApplicationAudioService.swift # Audio process discovery and volume state
-│   └── PriorityManager.swift         # Priority persistence
+│   ├── AudioDeviceService.swift   # CoreAudio device wrapper
+│   └── PriorityManager.swift      # Priority persistence
 └── Views/
-    ├── MenuBarView.swift             # Main popover UI
-    ├── VolumeMixerView.swift         # Collapsible per-app controls
-    └── DeviceListView.swift          # Device list and row components
+    ├── MenuBarView.swift          # Main popover UI
+    └── DeviceListView.swift       # Device list and row components
 ```
 
 ## Contributing

@@ -9,7 +9,6 @@ final class AudioDeviceService: @unchecked Sendable {
     private var listenerBlock: AudioObjectPropertyListenerBlock?
     private var volumeListenerBlock: AudioObjectPropertyListenerBlock?
     private var monitoredDeviceIds: Set<AudioObjectID> = []
-    private let applicationVolumeDeviceUIDPrefix = "app.audiopriority.volume."
 
     func getDevices() -> [AudioDevice] {
         var propertyAddress = AudioObjectPropertyAddress(
@@ -54,9 +53,6 @@ final class AudioDeviceService: @unchecked Sendable {
 
             guard let name = getDeviceName(id: deviceId) else { continue }
             guard let uid = getDeviceUID(id: deviceId) else { continue }
-            if uid.hasPrefix(applicationVolumeDeviceUIDPrefix) {
-                continue
-            }
 
             if hasInput {
                 devices.append(AudioDevice(id: deviceId, uid: uid, name: name, type: .input))
