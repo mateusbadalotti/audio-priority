@@ -187,16 +187,6 @@ private struct ApplicationSourceIcon: View {
             }
         }
         .frame(width: 24, height: 24)
-        .overlay(alignment: .bottomTrailing) {
-            Circle()
-                .fill(.green)
-                .frame(width: 7, height: 7)
-                .overlay {
-                    Circle()
-                        .stroke(.background, lineWidth: 1.5)
-                }
-                .accessibilityHidden(true)
-        }
         .accessibilityHidden(true)
     }
 }
