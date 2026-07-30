@@ -44,6 +44,9 @@ struct VolumeMixerSectionView: View {
                 .transition(.opacity)
             }
         }
+        .onAppear {
+            isExpanded = false
+        }
         .onChange(of: hasAudioSources) { _, hasAudioSources in
             if !hasAudioSources {
                 isExpanded = false
