@@ -72,14 +72,12 @@ jobs:
           mkdir -p tap/Casks
 
           VERSION="${RELEASE_VERSION}"
-          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/AudioPriority.zip"
-
           cat > tap/Casks/audio-priority.rb <<RUBY
           cask "audio-priority" do
             version "${VERSION}"
             sha256 "${ASSET_SHA256}"
 
-            url "${URL}"
+            url "https://github.com/${GITHUB_REPOSITORY}/releases/download/v#{version}/AudioPriority.zip"
             name "Audio Priority"
             desc "Menu bar app that manages audio device priority"
             homepage "https://badalotti.dev/audio-priority"
