@@ -19,8 +19,10 @@ Website: https://badalotti.dev/audio-priority
 - **Priority-based auto-switching**: Devices are ranked by priority. When a higher-priority device connects, it automatically becomes active.
 - **Device memory**: Remembers your device priority order across reconnects.
 - **Ignore devices**: Hide devices from the list.
+- **Custom device names**: Rename devices in the app and restore their original names at any time.
 - **Drag-to-reorder**: Reorder devices by dragging.
 - **Speaker and mic volume**: Adjust both volumes with a slider or scroll wheel.
+- **Volume locks**: Keep the active speaker or microphone at its current volume.
 - **Graceful volume fallback**: Shows "-" when the system volume is unavailable.
 - **Auto-switch toggle**: Enable or disable automatic device switching.
 - **Menu bar integration**: Lightweight, always-available controls.
@@ -62,9 +64,16 @@ Check the [Releases](https://github.com/mateusbadalotti/audio-priority/releases)
 - **Click a device**: Select it as the active device (connected only)
 - **Drag devices**: Reorder priority by dragging the handle
 
-### Device Actions (right-click menu)
+### Device actions (right-click menu)
 
+- **Rename device**: Set a custom name used in the app
+- **Restore original name**: Remove the custom name
 - **Ignore device**: Hide as speaker or microphone
+
+### Volume actions (right-click a slider)
+
+- **Lock volume**: Keep the active speaker or microphone at its current level
+- **Unlock volume**: Allow its volume to change again
 
 ### Auto-Switch
 

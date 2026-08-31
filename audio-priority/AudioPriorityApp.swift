@@ -35,6 +35,8 @@ final class AudioManager {
     var micVolume: Float = 0
     var isOutputVolumeAvailable: Bool = true
     var isInputVolumeAvailable: Bool = true
+    private(set) var lockedInputVolumes: [String: Float] = [:]
+    private(set) var lockedOutputVolumes: [String: Float] = [:]
     private let defaults = UserDefaults.standard
     private let autoSwitchDefaultsKey = "autoSwitchEnabled"
     private let deviceService = AudioDeviceService()
@@ -46,6 +48,15 @@ final class AudioManager {
     private enum RefreshConstants {
         static let deviceDebounce: TimeInterval = 0.08
         static let volumeDebounce: TimeInterval = 0.03
+        static let volumeComparisonTolerance: Float = 0.0001
+    }
+
+    var isOutputVolumeLocked: Bool {
+        lockedVolume(for: .output) != nil
+    }
+
+    var isInputVolumeLocked: Bool {
+        lockedVolume(for: .input) != nil
     }
 
     func refreshVolume() {
@@ -67,17 +78,21 @@ final class AudioManager {
     }
 
     func setVolume(_ newVolume: Float) {
+        guard !isOutputVolumeLocked else { return }
         volume = newVolume
         deviceService.setOutputVolume(newVolume)
     }
 
     func setMicVolume(_ newVolume: Float) {
+        guard !isInputVolumeLocked else { return }
         micVolume = newVolume
         deviceService.setInputVolume(newVolume)
     }
 
     init() {
         isAutoSwitchEnabled = defaults.object(forKey: autoSwitchDefaultsKey) as? Bool ?? true
+        lockedInputVolumes = priorityManager.lockedVolumes(for: .input)
+        lockedOutputVolumes = priorityManager.lockedVolumes(for: .output)
         performDeviceRefresh()
         refreshVolume()
         refreshMicVolume()
@@ -96,6 +111,7 @@ final class AudioManager {
     }
 
     private func handleVolumeChange() {
+        enforceCurrentVolumeLocks()
         refreshVolume()
         refreshMicVolume()
     }
@@ -110,8 +126,11 @@ final class AudioManager {
 
     private func applyDeviceSnapshot(_ allConnectedDevices: [AudioDevice]) {
         cachedDevices = allConnectedDevices
-        let connectedInputs = allConnectedDevices.filter { $0.type == .input }
-        let connectedOutputs = allConnectedDevices.filter { $0.type == .output }
+        let displayDevices = allConnectedDevices.map { device in
+            device.renamed(to: priorityManager.customName(for: device) ?? device.originalName)
+        }
+        let connectedInputs = displayDevices.filter { $0.type == .input }
+        let connectedOutputs = displayDevices.filter { $0.type == .output }
 
         let hiddenInputUIDs = priorityManager.hiddenUIDs(for: .input)
         var visibleInputs: [AudioDevice] = []
@@ -140,6 +159,7 @@ final class AudioManager {
         hiddenSpeakerDevices = regularHiddenOutputs
         currentInputId = deviceService.getCurrentDefaultDevice(type: .input)
         currentOutputId = deviceService.getCurrentDefaultDevice(type: .output)
+        enforceCurrentVolumeLocks()
     }
 
     private func performDeviceRefresh() {
@@ -210,6 +230,31 @@ final class AudioManager {
         refreshDevices()
     }
 
+    func renameDevice(_ device: AudioDevice, to proposedName: String) {
+        let name = proposedName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+
+        if name == device.originalName {
+            priorityManager.restoreOriginalName(for: device)
+        } else {
+            priorityManager.setCustomName(name, for: device)
+        }
+        refreshDevices()
+    }
+
+    func restoreOriginalName(for device: AudioDevice) {
+        priorityManager.restoreOriginalName(for: device)
+        refreshDevices()
+    }
+
+    func toggleOutputVolumeLock() {
+        toggleVolumeLock(for: .output)
+    }
+
+    func toggleInputVolumeLock() {
+        toggleVolumeLock(for: .input)
+    }
+
     func moveInputDevice(from source: IndexSet, to destination: Int) {
         inputDevices.move(fromOffsets: source, toOffset: destination)
         priorityManager.savePriorities(inputDevices, type: .input)
@@ -240,6 +285,7 @@ final class AudioManager {
         }
         deviceService.setDefaultDevice(device.id, type: .input)
         currentInputId = device.id
+        enforceVolumeLock(for: .input)
         refreshMicVolume()
     }
 
@@ -249,6 +295,7 @@ final class AudioManager {
         }
         deviceService.setDefaultDevice(device.id, type: .output)
         currentOutputId = device.id
+        enforceVolumeLock(for: .output)
         refreshVolume()
     }
 
@@ -283,5 +330,64 @@ final class AudioManager {
 
     private func handleDeviceChange() {
         scheduleDeviceRefresh()
+    }
+
+    private func toggleVolumeLock(for type: AudioDeviceType) {
+        guard let device = currentDevice(for: type) else { return }
+        var lockedVolumes = type == .input ? lockedInputVolumes : lockedOutputVolumes
+
+        if lockedVolumes[device.uid] != nil {
+            lockedVolumes.removeValue(forKey: device.uid)
+            priorityManager.setLockedVolume(nil, for: device)
+        } else {
+            let currentVolume = type == .input
+                ? deviceService.getInputVolume()
+                : deviceService.getOutputVolume()
+            guard let currentVolume else { return }
+            lockedVolumes[device.uid] = currentVolume
+            priorityManager.setLockedVolume(currentVolume, for: device)
+        }
+
+        if type == .input {
+            lockedInputVolumes = lockedVolumes
+        } else {
+            lockedOutputVolumes = lockedVolumes
+        }
+    }
+
+    private func currentDevice(for type: AudioDeviceType) -> AudioDevice? {
+        let currentId = type == .input ? currentInputId : currentOutputId
+        return cachedDevices.first { $0.type == type && $0.id == currentId }
+    }
+
+    private func lockedVolume(for type: AudioDeviceType) -> Float? {
+        guard let device = currentDevice(for: type) else { return nil }
+        let lockedVolumes = type == .input ? lockedInputVolumes : lockedOutputVolumes
+        return lockedVolumes[device.uid]
+    }
+
+    private func enforceCurrentVolumeLocks() {
+        enforceVolumeLock(for: .input)
+        enforceVolumeLock(for: .output)
+    }
+
+    private func enforceVolumeLock(for type: AudioDeviceType) {
+        guard let lockedVolume = lockedVolume(for: type) else { return }
+        let currentVolume = type == .input
+            ? deviceService.getInputVolume()
+            : deviceService.getOutputVolume()
+
+        if let currentVolume,
+           abs(currentVolume - lockedVolume) <= RefreshConstants.volumeComparisonTolerance {
+            return
+        }
+
+        if type == .input {
+            deviceService.setInputVolume(lockedVolume)
+            micVolume = lockedVolume
+        } else {
+            deviceService.setOutputVolume(lockedVolume)
+            volume = lockedVolume
+        }
     }
 }

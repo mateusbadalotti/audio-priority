@@ -53,7 +53,9 @@ private struct DevicePanel: View {
                 currentDeviceId: audioManager.currentOutputId,
                 onMove: audioManager.moveSpeakerDevice,
                 onSelect: audioManager.setOutputDevice,
-                onHide: audioManager.hideDevice
+                onHide: audioManager.hideDevice,
+                onRename: audioManager.renameDevice,
+                onRestoreName: audioManager.restoreOriginalName
             )
 
             DeviceSectionView(
@@ -63,7 +65,9 @@ private struct DevicePanel: View {
                 currentDeviceId: audioManager.currentInputId,
                 onMove: audioManager.moveInputDevice,
                 onSelect: audioManager.setInputDevice,
-                onHide: audioManager.hideDevice
+                onHide: audioManager.hideDevice,
+                onRename: audioManager.renameDevice,
+                onRestoreName: audioManager.restoreOriginalName
             )
         }
         .padding(.horizontal, 6)
@@ -122,8 +126,22 @@ struct OutputVolumeSliderView: View {
             accessibilityLabel: "Output volume",
             value: audioManager.volume,
             isAvailable: audioManager.isOutputVolumeAvailable,
+            isLocked: audioManager.isOutputVolumeLocked,
             onChange: audioManager.setVolume
         )
+        .contextMenu {
+            Button {
+                audioManager.toggleOutputVolumeLock()
+            } label: {
+                Label(
+                    audioManager.isOutputVolumeLocked
+                        ? "Unlock speaker volume"
+                        : "Lock speaker volume",
+                    systemImage: audioManager.isOutputVolumeLocked ? "lock.open" : "lock"
+                )
+            }
+            .disabled(!audioManager.isOutputVolumeAvailable && !audioManager.isOutputVolumeLocked)
+        }
     }
 }
 
@@ -136,8 +154,22 @@ struct MicVolumeSliderView: View {
             accessibilityLabel: "Microphone volume",
             value: audioManager.micVolume,
             isAvailable: audioManager.isInputVolumeAvailable,
+            isLocked: audioManager.isInputVolumeLocked,
             onChange: audioManager.setMicVolume
         )
+        .contextMenu {
+            Button {
+                audioManager.toggleInputVolumeLock()
+            } label: {
+                Label(
+                    audioManager.isInputVolumeLocked
+                        ? "Unlock microphone volume"
+                        : "Lock microphone volume",
+                    systemImage: audioManager.isInputVolumeLocked ? "lock.open" : "lock"
+                )
+            }
+            .disabled(!audioManager.isInputVolumeAvailable && !audioManager.isInputVolumeLocked)
+        }
     }
 }
 
@@ -148,6 +180,7 @@ struct SmoothVolumeSlider: View {
     let accessibilityLabel: LocalizedStringResource
     let value: Float
     let isAvailable: Bool
+    let isLocked: Bool
     let onChange: (Float) -> Void
 
     @State private var sliderValue: Double
@@ -159,12 +192,14 @@ struct SmoothVolumeSlider: View {
         accessibilityLabel: LocalizedStringResource,
         value: Float,
         isAvailable: Bool,
+        isLocked: Bool,
         onChange: @escaping (Float) -> Void
     ) {
         self.icon = icon
         self.accessibilityLabel = accessibilityLabel
         self.value = value
         self.isAvailable = isAvailable
+        self.isLocked = isLocked
         self.onChange = onChange
         _sliderValue = State(initialValue: Double(value))
     }
@@ -193,10 +228,19 @@ struct SmoothVolumeSlider: View {
                 symbolSize: 10
             )
             .frame(width: 20)
-                .animation(
-                    reduceMotion ? nil : .easeInOut(duration: 0.15),
-                    value: icon
-                )
+            .overlay(alignment: .bottomTrailing) {
+                if isLocked {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 7, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .offset(x: 2, y: 1)
+                        .accessibilityHidden(true)
+                }
+            }
+            .animation(
+                reduceMotion ? nil : .easeInOut(duration: 0.15),
+                value: icon
+            )
 
             Slider(
                 value: $sliderValue,
@@ -211,8 +255,10 @@ struct SmoothVolumeSlider: View {
             )
             .controlSize(.small)
             .tint(.secondary)
+            .disabled(!isAvailable || isLocked)
             .accessibilityLabel(accessibilityLabel)
             .accessibilityValue(percentText)
+            .accessibilityHint(isLocked ? "Volume locked" : "")
 
             Text(percentText)
                 .font(.system(size: 11, weight: .medium))
@@ -238,6 +284,7 @@ struct SmoothVolumeSlider: View {
             }
         }
         .onScrollWheel { delta in
+            guard isAvailable, !isLocked else { return }
             let newVolume = value + Float(delta) * VolumeConstants.scrollStep
             onChange(max(VolumeConstants.minVolume, min(VolumeConstants.maxVolume, newVolume)))
         }
@@ -302,6 +349,8 @@ struct DeviceSectionView: View {
     let onMove: (IndexSet, Int) -> Void
     let onSelect: (AudioDevice) -> Void
     var onHide: ((AudioDevice) -> Void)?
+    var onRename: ((AudioDevice, String) -> Void)?
+    var onRestoreName: ((AudioDevice) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -326,7 +375,9 @@ struct DeviceSectionView: View {
                     currentDeviceId: currentDeviceId,
                     onMove: onMove,
                     onSelect: onSelect,
-                    onHide: onHide
+                    onHide: onHide,
+                    onRename: onRename,
+                    onRestoreName: onRestoreName
                 )
             }
         }

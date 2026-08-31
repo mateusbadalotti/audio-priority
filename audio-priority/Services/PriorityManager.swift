@@ -7,6 +7,53 @@ final class PriorityManager {
     private let outputPrioritiesKey = "speakerPriorities"
     private let hiddenInputsKey = "hiddenMics"
     private let hiddenOutputsKey = "hiddenSpeakers"
+    private let customNamesKey = "customDeviceNames"
+    private let lockedInputVolumesKey = "lockedMicVolumes"
+    private let lockedOutputVolumesKey = "lockedSpeakerVolumes"
+
+    func customName(for device: AudioDevice) -> String? {
+        customNames()[device.uid]
+    }
+
+    func setCustomName(_ name: String, for device: AudioDevice) {
+        var names = customNames()
+        names[device.uid] = name
+        defaults.set(names, forKey: customNamesKey)
+    }
+
+    func restoreOriginalName(for device: AudioDevice) {
+        var names = customNames()
+        names.removeValue(forKey: device.uid)
+        defaults.set(names, forKey: customNamesKey)
+    }
+
+    func lockedVolumes(for type: AudioDeviceType) -> [String: Float] {
+        let key = type == .input ? lockedInputVolumesKey : lockedOutputVolumesKey
+        let values = defaults.dictionary(forKey: key) ?? [:]
+
+        return values.reduce(into: [:]) { result, item in
+            if let number = item.value as? NSNumber {
+                result[item.key] = number.floatValue
+            }
+        }
+    }
+
+    func setLockedVolume(_ volume: Float?, for device: AudioDevice) {
+        let key = device.type == .input ? lockedInputVolumesKey : lockedOutputVolumesKey
+        var values = lockedVolumes(for: device.type)
+        values[device.uid] = volume
+        defaults.set(values, forKey: key)
+    }
+
+    private func customNames() -> [String: String] {
+        let values = defaults.dictionary(forKey: customNamesKey) ?? [:]
+
+        return values.reduce(into: [:]) { result, item in
+            if let name = item.value as? String {
+                result[item.key] = name
+            }
+        }
+    }
 
     func hiddenUIDs(for type: AudioDeviceType) -> Set<String> {
         let key = type == .input ? hiddenInputsKey : hiddenOutputsKey

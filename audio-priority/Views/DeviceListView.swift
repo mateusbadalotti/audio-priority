@@ -9,9 +9,14 @@ struct DeviceListView: View {
     let onMove: (IndexSet, Int) -> Void
     let onSelect: (AudioDevice) -> Void
     var onHide: ((AudioDevice) -> Void)?
+    var onRename: ((AudioDevice, String) -> Void)?
+    var onRestoreName: ((AudioDevice) -> Void)?
 
     @State private var draggingIndex: Int?
     @State private var targetIndex: Int?
+    @State private var deviceBeingRenamed: AudioDevice?
+    @State private var proposedName = ""
+    @State private var isRenameDialogPresented = false
     
     private let rowHeight: CGFloat = 28
     private let rowSpacing: CGFloat = 7
@@ -22,13 +27,17 @@ struct DeviceListView: View {
         currentDeviceId: AudioObjectID?,
         onMove: @escaping (IndexSet, Int) -> Void,
         onSelect: @escaping (AudioDevice) -> Void,
-        onHide: ((AudioDevice) -> Void)? = nil
+        onHide: ((AudioDevice) -> Void)? = nil,
+        onRename: ((AudioDevice, String) -> Void)? = nil,
+        onRestoreName: ((AudioDevice) -> Void)? = nil
     ) {
         self.devices = devices
         self.currentDeviceId = currentDeviceId
         self.onMove = onMove
         self.onSelect = onSelect
         self.onHide = onHide
+        self.onRename = onRename
+        self.onRestoreName = onRestoreName
     }
 
     var body: some View {
@@ -40,6 +49,8 @@ struct DeviceListView: View {
                     isSelected: device.id == currentDeviceId,
                     onSelect: { onSelect(device) },
                     onHide: onHide,
+                    onRename: onRename == nil ? nil : { beginRenaming(device) },
+                    onRestoreName: onRestoreName,
                     isDragging: draggingIndex == index,
                     isDropTarget: isDropTarget(for: index),
                     isDropTargetBelow: isDropTargetBelow(for: index),
@@ -64,6 +75,29 @@ struct DeviceListView: View {
                 )
             }
         }
+        .alert(
+            "Rename device",
+            isPresented: $isRenameDialogPresented,
+            presenting: deviceBeingRenamed
+        ) { device in
+            TextField("Device name", text: $proposedName)
+            Button("Cancel", role: .cancel) {
+                deviceBeingRenamed = nil
+            }
+            Button("Save") {
+                onRename?(device, proposedName)
+                deviceBeingRenamed = nil
+            }
+            .disabled(proposedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        } message: { device in
+            Text("Original name: \(device.originalName)")
+        }
+    }
+
+    private func beginRenaming(_ device: AudioDevice) {
+        proposedName = device.name
+        deviceBeingRenamed = device
+        isRenameDialogPresented = true
     }
     
     private func isDropTarget(for index: Int) -> Bool {
@@ -104,6 +138,8 @@ struct DraggableDeviceRow: View {
     let isSelected: Bool
     let onSelect: () -> Void
     var onHide: ((AudioDevice) -> Void)?
+    var onRename: (() -> Void)?
+    var onRestoreName: ((AudioDevice) -> Void)?
     let isDragging: Bool
     var isDropTarget: Bool = false
     var isDropTargetBelow: Bool = false
@@ -142,6 +178,24 @@ struct DraggableDeviceRow: View {
         .contentShape(Rectangle())
         .gesture(dragGesture)
         .contextMenu {
+            if let onRename {
+                Button(action: onRename) {
+                    Label("Rename device...", systemImage: "pencil")
+                }
+            }
+
+            if device.hasCustomName, let onRestoreName {
+                Button {
+                    onRestoreName(device)
+                } label: {
+                    Label("Restore original name", systemImage: "arrow.counterclockwise")
+                }
+            }
+
+            if onRename != nil || (device.hasCustomName && onRestoreName != nil) {
+                Divider()
+            }
+
             if let onHide {
                 Button {
                     onHide(device)
