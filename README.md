@@ -4,11 +4,11 @@
   <img src="icon.png" width="128" height="128" alt="audio-priority Icon">
 </p>
 
-A native macOS menu bar app that automatically manages audio device priorities. Set your preferred order for speakers and microphones - the app automatically switches to the highest-priority connected device.
+A native macOS menu bar app that manages audio device priorities. Set your preferred order for speakers and microphones, and the app switches to the highest-priority connected device.
 
 Website: https://badalotti.dev/audio-priority
 
-![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
+![macOS 26+](https://img.shields.io/badge/macOS-26%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-6.2-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -17,12 +17,12 @@ Website: https://badalotti.dev/audio-priority
 ## Features
 
 - **Priority-based auto-switching**: Devices are ranked by priority. When a higher-priority device connects, it automatically becomes active.
-- **Device memory**: Remembers your device priority order across reconnects.
+- **Device memory**: Remembers priority order, custom names, ignored devices, and volume locks across reconnects and app launches.
 - **Ignore devices**: Hide devices from the list.
-- **Custom device names**: Rename devices in the app and restore their original names at any time.
+- **Custom device names**: Give any speaker or microphone an app-only name, then restore its original CoreAudio name at any time.
 - **Drag-to-reorder**: Reorder devices by dragging.
 - **Speaker and mic volume**: Adjust both volumes with a slider or scroll wheel.
-- **Volume locks**: Keep the active speaker or microphone at its current volume.
+- **Per-device volume locks**: Lock the active speaker or microphone at its current level. AudioPriority restores that level after external changes, device switches, reconnects, and app launches.
 - **Graceful volume fallback**: Shows "-" when the system volume is unavailable.
 - **Auto-switch toggle**: Enable or disable automatic device switching.
 - **Menu bar integration**: Lightweight, always-available controls.
@@ -30,15 +30,22 @@ Website: https://badalotti.dev/audio-priority
 ## Installation
 
 ### Requirements
-- macOS 14.0 or later
 
-### Homebrew (Cask)
+- macOS 26.0 or later
+
+### Homebrew cask
+
 ```bash
 brew install --cask mateusbadalotti/tap/audio-priority
 ```
-Updates via Homebrew.
 
-### Build from Source
+Update an existing installation with:
+
+```bash
+brew upgrade --cask audio-priority
+```
+
+### Build from source
 
 1. Clone the repository:
    ```bash
@@ -54,12 +61,13 @@ Updates via Homebrew.
 
 Or open `audio-priority.xcodeproj` in Xcode and build with ⌘R.
 
-### Download Release
+### Download release
+
 Check the [Releases](https://github.com/mateusbadalotti/audio-priority/releases) page for pre-built binaries.
 
 ## Usage
 
-### Managing Priorities
+### Managing priorities
 
 - **Click a device**: Select it as the active device (connected only)
 - **Drag devices**: Reorder priority by dragging the handle
@@ -67,25 +75,31 @@ Check the [Releases](https://github.com/mateusbadalotti/audio-priority/releases)
 ### Device actions (right-click menu)
 
 - **Rename device**: Set a custom name used in the app
-- **Restore original name**: Remove the custom name
+- **Restore original name**: Remove the custom name and show the name reported by CoreAudio
 - **Ignore device**: Hide as speaker or microphone
+
+Custom names only affect AudioPriority. They do not rename the device in macOS or other apps.
 
 ### Volume actions (right-click a slider)
 
-- **Lock volume**: Keep the active speaker or microphone at its current level
-- **Unlock volume**: Allow its volume to change again
+- **Lock speaker volume**: Right-click the speaker slider to lock the active output device at its current level
+- **Lock microphone volume**: Right-click the microphone slider to lock the active input device at its current level
+- **Unlock volume**: Right-click the same slider and choose `Unlock speaker volume` or `Unlock microphone volume`
 
-### Auto-Switch
+Locks belong to individual devices. While the current device is locked, its slider is disabled and a small lock badge appears on the volume icon.
+
+### Auto-switch
 
 Use the **Auto** toggle in the footer to enable or disable automatic device switching.
 
-## How It Works
+## How it works
 
-1. **Device Discovery**: Uses CoreAudio to enumerate audio devices and listen for changes.
-2. **Priority Storage**: Device priorities are stored in UserDefaults, keyed by device UID (stable across reconnects).
-3. **Auto-Switching**: When devices connect/disconnect, the app automatically selects the highest-priority available device.
+1. **Device discovery**: CoreAudio provides the connected input and output devices and reports device or volume changes.
+2. **Preference storage**: Priority order, ignored devices, custom names, and locked levels are stored in UserDefaults by stable device UID.
+3. **Auto-switching**: When devices connect or disconnect, the app selects the highest-priority available device.
+4. **Volume enforcement**: If the active device has a lock, the app restores its saved level whenever CoreAudio reports a volume change.
 
-## Project Structure
+## Project structure
 
 ```
 audio-priority/
