@@ -12,7 +12,7 @@ Website: https://badalotti.dev/audio-priority
 ![Swift](https://img.shields.io/badge/Swift-6.2-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-![Screenshot](screenshot.png)
+![Screenshot](screenshot-v2.4.0.png)
 
 ## Features
 
