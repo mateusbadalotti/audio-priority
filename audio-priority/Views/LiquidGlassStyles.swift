@@ -32,7 +32,6 @@ struct LiquidGlassGroup<Content: View>: View {
 
 struct LiquidGlassAudioIcon: View {
     let systemName: String
-    var tint: Color = .secondary
     var size: CGFloat = LiquidGlassMetrics.audioIconSize
     var symbolSize: CGFloat = 11
 
@@ -40,12 +39,8 @@ struct LiquidGlassAudioIcon: View {
         Image(systemName: systemName)
             .symbolRenderingMode(.hierarchical)
             .font(.system(size: symbolSize, weight: .medium))
-            .foregroundStyle(.primary.opacity(0.72))
+            .foregroundStyle(.secondary)
             .frame(width: size, height: size)
-            .glassEffect(
-                .regular.tint(tint.opacity(0.14)),
-                in: Circle()
-            )
             .accessibilityHidden(true)
     }
 }
@@ -71,7 +66,10 @@ private struct LiquidGlassPanelModifier: ViewModifier {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
 
         content
-            .glassEffect(.regular, in: shape)
+            .background(Color(nsColor: .controlBackgroundColor), in: shape)
+            .overlay(
+                shape.strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
+            )
     }
 }
 
@@ -87,20 +85,23 @@ private struct LiquidGlassRowBackgroundModifier: ViewModifier {
 
         content
             .background(
-                isActive && !isProminent ? Color.primary.opacity(0.04) : Color.clear,
+                rowBackground,
                 in: shape
             )
-            .glassEffect(
-                rowGlass,
-                in: shape
+            .overlay(
+                shape.strokeBorder(rowBorder, lineWidth: 1)
             )
     }
 
-    private var rowGlass: Glass {
+    private var rowBackground: Color {
         if isProminent {
-            return .regular.tint(.green.opacity(0.1))
+            return .green.opacity(0.18)
         }
-        return .clear
+        return .primary.opacity(isActive ? 0.09 : 0.055)
+    }
+
+    private var rowBorder: Color {
+        isProminent ? .green.opacity(0.28) : .primary.opacity(0.11)
     }
 }
 

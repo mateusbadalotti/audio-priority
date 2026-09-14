@@ -26,6 +26,7 @@ struct MenuBarView: View {
             .padding(LiquidGlassMetrics.outerPadding)
         }
         .frame(width: LiquidGlassMetrics.popoverWidth)
+        .background(Color(nsColor: .windowBackgroundColor))
     }
 }
 
