@@ -26,7 +26,10 @@ struct MenuBarView: View {
             .padding(LiquidGlassMetrics.outerPadding)
         }
         .frame(width: LiquidGlassMetrics.popoverWidth)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(
+            Color(nsColor: .windowBackgroundColor)
+                .overlay(Color.black.opacity(0.40))
+        )
     }
 }
 
@@ -99,7 +102,6 @@ private struct FooterPanel: View {
                 }
                 .liquidGlassIconButtonStyle()
                 .accessibilityLabel("Quit")
-                .help("Quit")
             }
         }
         .padding(.top, 2)
@@ -505,6 +507,5 @@ struct AutoSwitchToggle: View {
         .liquidGlassIconButtonStyle(isProminent: audioManager.isAutoSwitchEnabled)
         .accessibilityLabel("Auto Switch")
         .accessibilityValue(audioManager.isAutoSwitchEnabled ? "On" : "Off")
-        .help(audioManager.isAutoSwitchEnabled ? "Disable auto-switching" : "Enable auto-switching")
     }
 }
