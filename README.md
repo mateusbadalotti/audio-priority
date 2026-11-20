@@ -12,7 +12,10 @@ Website: https://badalotti.dev/audio-priority
 ![Swift](https://img.shields.io/badge/Swift-6.2-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-![Screenshot](screenshot.png?v=2.4.2)
+<p align="center">
+  <img src="screenshot.png?v=2.5.0" width="328" alt="AudioPriority in dark mode">
+  <img src="screenshot-light.png?v=2.5.0" width="328" alt="AudioPriority in light mode">
+</p>
 
 ## Features
 
